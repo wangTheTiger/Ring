@@ -3,8 +3,6 @@
 #include <fstream>
 #include <sdsl/construct.hpp>
 
-using namespace std;
-
 using namespace std::chrono;
 using timer = std::chrono::high_resolution_clock;
 

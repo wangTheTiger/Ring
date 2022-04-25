@@ -27,7 +27,6 @@
 #include<map>
 
 using namespace boost;
-using namespace std;
 
 //#include<chrono>
 //#include<ctime>
