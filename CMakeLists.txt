@@ -37,6 +37,7 @@ add_library(ringlib STATIC ${sources})
 set(BUILD_TARGETS
     build-index
     query-index
+    test_bitmap_constant_time_init
 )
 
 foreach(target ${BUILD_TARGETS})
