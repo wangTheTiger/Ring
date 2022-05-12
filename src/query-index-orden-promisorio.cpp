@@ -198,12 +198,10 @@ void set_scores(vector<Triple*>& query, vector<string>& gao) {
 int main(int argc, char* argv[])
 {
     vector<string> dummy_queries;
-    bool result = get_file_content(argv[2], dummy_queries);
-
+    bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/others_code/Ring_arroyuelo/Queries/Queries-wikidata-benchmark.txt", dummy_queries);
     triple_bwt graph;
-
     cout << " Loading the index..."; fflush(stdout);
-    graph.load(string(argv[1]));
+    graph.load("/home/fabrizio/dcc_uchile/git_projects/others_code/Ring_arroyuelo/dat/wikidata-filtered-enumerated.dat");
 
     cout << endl << " Index loaded " << graph.size() << " bytes" << endl;
 
@@ -217,6 +215,8 @@ int main(int argc, char* argv[])
     if(result)
     {
 
+        /*First it builds the Colored Range Counting Wavelet Matrix representation of each Ring's BWT and then, per each one of them it calculates the number of different values*/
+        graph.calculate_gao();
         int count = 1;
         for (string query_string : dummy_queries) {
 
@@ -232,17 +232,12 @@ int main(int argc, char* argv[])
                 query.push_back(triple_pattern);
             }
 
-            // vector<string> gao = get_gao(query);
-            // vector<string> gao = get_gao_min_opt(query, graph);
-            // cout << gao [0] << " - " << gao [1] << " - " << gao[2] << endl;
-
             start = high_resolution_clock::now();
 
             vector<string> gao = get_gao_min_gen(query, graph);
             set_scores(query, gao);
 
             LeapfrogOP lf(&gao, &graph, &query);
-
             /*
             cout << "Query Details:" << endl;
             lf.print_query();
@@ -250,7 +245,6 @@ int main(int argc, char* argv[])
             lf.serialize();
             cout << "##########" << endl;
             */
-
             map<string, uint64_t> bindings;
             int number_of_results = 0;
 

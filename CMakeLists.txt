@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0.0)
 
 #> Variables 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_COMPILER "g++")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -O0 -g3 -pthread \
@@ -34,10 +34,11 @@ set(sources ${SRCS})
 # Include ring's 'sources' as a static library (used later by the linker)
 add_library(ringlib STATIC ${sources})
 
+#Setting up the source code
 set(BUILD_TARGETS
     build-index
     query-index
-    test_bitmap_constant_time_init
+    query-index-orden-promisorio
 )
 
 foreach(target ${BUILD_TARGETS})
@@ -45,6 +46,18 @@ foreach(target ${BUILD_TARGETS})
     target_link_libraries(${target} ringlib boost_program_options boost_system sdsl divsufsort divsufsort64)
 endforeach(target)
 
+#Setting up tests
+set(TEST_TARGETS
+    test_wm
+)
+
+add_test(NAME test_vm COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/test_wm)
+foreach(target ${TEST_TARGETS})
+    add_executable(${target} src/tests/${target}.cpp)
+    target_link_libraries(${target} ringlib boost_program_options boost_system sdsl divsufsort divsufsort64)
+endforeach(target)
+
+#Others: todo investigate what cpack does.
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
