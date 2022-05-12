@@ -20,11 +20,11 @@ int main()
     uint64_t x_s = 0;
     uint64_t x_e = C.size();
     //O ( (x_e - x_s) * log sigma)
-    std::map<uint64_t, uint64_t> aux_map;//TODO: usar para almacenar el mayor valor de i' < i.
+    std::map<uint64_t, uint64_t> aux_map;
     C[0] = 0;
     {
         aux_map[wm_orig[0]] = 0;
-        for(uint64_t i = x_s + 1; i < x_e; i++){ 
+        for(uint64_t i = x_s + 1; i < x_e; i++){
             uint64_t l_i = wm_orig[i];
             bool found = false;
             for(uint64_t j = aux_map[l_i]; j < i; j++){

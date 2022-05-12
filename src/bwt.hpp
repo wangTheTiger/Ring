@@ -21,7 +21,7 @@
 #define BWT_T
 
 #include "Config.hpp"
-#include <exception>      // std::exception
+#include <exception> // std::exception
 using namespace std;
 
 class bwt
@@ -46,31 +46,43 @@ private:
         */
     bool build_crc_wm(uint64_t x_s, uint64_t x_e)
     {
-        //>> DEBUG
-        x_s = 0, x_e = 10;
-        //construct_im(L,)
-        //<< DEBUG
+        std::cout << "L.sigma : " << L.sigma << std::endl;
         sdsl::int_vector<> C(x_e - x_s);
-        std::cout << "build_crc_wm C size = " << C.size() << std::endl;
-        //O ( (x_e - x_s) * log sigma) 
-        std::map<uint64_t, uint64_t> aux_map;//TODO: usar para almacenar el mayor valor de i' < i.
+        std::cout << "Building int vector to store CRC (size = " << C.size() << ")." << std::endl;
+        //O ( (x_e - x_s) * log sigma)
+        // CORE >>
+        std::map<uint64_t, uint64_t> aux_map;
         C[0] = 0;
-        aux_map[L[0]] = 0;
-        for(uint64_t i = x_s + 1; i < x_e; i++){
-            uint64_t l_i = L[i];
-            bool found = false;
-            for(uint64_t j = 0; j < i; j++){
-                uint64_t l_j = L[j];
-                if(l_j == l_i){
-                    //aux_map()
-                    found=true;
+        {
+            aux_map[L[0]] = 0;
+            for (uint64_t i = x_s + 1; i < x_e; i++)
+            {
+                uint64_t l_i = L[i];
+                bool found = false;
+                for (uint64_t j = aux_map[l_i]; j < i; j++)
+                {
+                    uint64_t l_j = L[j];
+                    if (l_j == l_i)
+                    {
+                        C[i] = j + 1;
+                        aux_map[l_i] = j + 1;
+                        found = true;
+                        break;
+                    }
                 }
-            }
-            if(!found){
-                C[i] = 0;
+                if (!found)
+                {
+                    //Handling first time found symbols.
+                    C[i] = 0;
+                    aux_map[l_i] = 0; //aux_map[i] = 0;
+                }
+                //TODO: remove the following two lines
+                //if ( i % 10000 == 0)
+                //    std :: cout<< i << " entries processed..." << std::endl;
             }
         }
-        std::cout << "Building the crc WM." << std::endl;
+        // CORE <<
+        std::cout << "Building the CRC WM based on the CRC int vector." << std::endl;
         construct_im(crc_L, C);
         try
         {
@@ -83,7 +95,7 @@ private:
                 return false;
             }
         }
-        catch (std::exception& e)
+        catch (std::exception &e)
         {
             return false;
         }
