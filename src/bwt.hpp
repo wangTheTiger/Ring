@@ -76,9 +76,6 @@ private:
                     C[i] = 0;
                     aux_map[l_i] = 0; //aux_map[i] = 0;
                 }
-                //TODO: remove the following two lines
-                //if ( i % 10000 == 0)
-                //    std :: cout<< i << " entries processed..." << std::endl;
             }
         }
         // CORE <<

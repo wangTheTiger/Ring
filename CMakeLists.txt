@@ -48,7 +48,8 @@ endforeach(target)
 
 #Setting up tests
 set(TEST_TARGETS
-    test_wm
+    test_colored_range_counting_wm
+    test_initializable_bitmap
 )
 
 add_test(NAME test_vm COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/test_wm)
