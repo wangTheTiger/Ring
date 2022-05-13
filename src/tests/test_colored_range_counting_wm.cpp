@@ -3,16 +3,16 @@
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/wavelet_trees.hpp>
 #include <sdsl/wt_algorithm.hpp>
-
+#include <unordered_map>
 int main()
 {
     //1.
     std::cout << ">> Starting test_wm" << std::endl;
     //                 S = {a, b, r, a, c, a, d, a, b, r, a}
     sdsl::int_vector<> S = {1, 2, 5, 1, 3, 1, 4, 1, 2, 5, 1};
-    sdsl::wm_int<sdsl::bit_vector> wm_orig;
+    sdsl::wm_int<sdsl::bit_vector> L;
     std::cout << "Buiding original WM based on S = " << S << std::endl;
-    construct_im(wm_orig, S);
+    construct_im(L, S);
 
     //2.
     sdsl::int_vector<> C(S.size());
@@ -20,26 +20,21 @@ int main()
     uint64_t x_s = 0;
     uint64_t x_e = C.size();
     //O ( (x_e - x_s) * log sigma)
-    std::map<uint64_t, uint64_t> aux_map;
     C[0] = 0;
     {
-        aux_map[wm_orig[0]] = 0;
+        std::unordered_map<uint64_t, uint64_t> hash_map;
+        hash_map[L[0]] = 0;
+        std::cout << 0 << " ";fflush(stdout);
         for(uint64_t i = x_s + 1; i < x_e; i++){
-            uint64_t l_i = wm_orig[i];
-            bool found = false;
-            for(uint64_t j = aux_map[l_i]; j < i; j++){
-                uint64_t l_j = wm_orig[j];
-                if(l_j == l_i){
-                    C[i] = j + 1;
-                    aux_map[l_i] = j + 1;
-                    found=true;
-                    break;
-                }
-            }
-            if(!found){
-                //Handling first time found symbols.
+            auto it = hash_map.find(L[i]);
+            if(it == hash_map.end()){
+                hash_map.insert({L[i], i});
                 C[i] = 0;
-                aux_map[l_i] = 0;//aux_map[i] = 0;
+                std::cout << C[i] << " ";fflush(stdout);
+            }else{
+                C[i] = it->second + 1;
+                std::cout << C[i] << " ";fflush(stdout);
+                it->second = i;
             }
         }
     }

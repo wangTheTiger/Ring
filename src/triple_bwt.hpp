@@ -845,19 +845,14 @@ public:
     //! TODO:
     /*!
     * \author Fabrizio Barisione
-    * \returns boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
+    * \returns (OLD) TODO: boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
     * 'crc_bwt_[o|p|s]' and the number of distinct values as 'num_dist_values' in  BWT_S, BWT_P & BWT_O respectively.
     */
-    bool calculate_gao()
+    void calculate_gao()
     {
-        if (BWT_S.calculate_gao() && BWT_P.calculate_gao() && BWT_O.calculate_gao())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        BWT_S.calculate_gao();
+        BWT_P.calculate_gao();
+        BWT_O.calculate_gao();
     }
 };
 #endif

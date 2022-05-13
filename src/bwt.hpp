@@ -22,6 +22,7 @@
 
 #include "Config.hpp"
 #include <exception> // std::exception
+#include <unordered_map>
 using namespace std;
 
 class bwt
@@ -46,35 +47,23 @@ private:
         */
     bool build_crc_wm(uint64_t x_s, uint64_t x_e)
     {
-        std::cout << "L.sigma : " << L.sigma << std::endl;
+        std::cout << "L.sigma : " << L.sigma << ", L.size() : " << L.size() << std::endl;
         sdsl::int_vector<> C(x_e - x_s);
         std::cout << "Building int vector to store CRC (size = " << C.size() << ")." << std::endl;
         //O ( (x_e - x_s) * log sigma)
         // CORE >>
-        std::map<uint64_t, uint64_t> aux_map;
         C[0] = 0;
         {
-            aux_map[L[0]] = 0;
-            for (uint64_t i = x_s + 1; i < x_e; i++)
-            {
-                uint64_t l_i = L[i];
-                bool found = false;
-                for (uint64_t j = aux_map[l_i]; j < i; j++)
-                {
-                    uint64_t l_j = L[j];
-                    if (l_j == l_i)
-                    {
-                        C[i] = j + 1;
-                        aux_map[l_i] = j + 1;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                {
-                    //Handling first time found symbols.
+            std::unordered_map<uint64_t, uint64_t> hash_map;
+            hash_map[L[0]] = 0;
+            for(uint64_t i = x_s + 1; i < x_e; i++){
+                auto it = hash_map.find(L[i]);
+                if(it == hash_map.end()){
+                    hash_map.insert({L[i], i});
                     C[i] = 0;
-                    aux_map[l_i] = 0; //aux_map[i] = 0;
+                }else{
+                    C[i] = it->second + 1;
+                    it->second = i;
                 }
             }
         }
@@ -83,6 +72,7 @@ private:
         construct_im(crc_L, C);
         try
         {
+            std::cout << "CRC WM size : " << crc_L.size() << std::endl;
             if (crc_L.size() > 0)
             {
                 return true;
@@ -109,6 +99,7 @@ private:
         */
     uint64_t calculate_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, uint64_t rng_s, uint64_t rng_e)
     {
+        std::cout << "calculate_number_distinct_values_on_range [" << x_s << ", " << x_e << "]" << std::endl;
         auto res = crc_L.range_search_2d(x_s, x_e, rng_s, rng_e, false);
         return get<0>(res);
     }
@@ -259,16 +250,22 @@ public:
         return pair<uint64_t, uint64_t>(s, e);
     }
 
-    //! TODO:
+    //! TODO: Important: what's the sense of calculating num of distinct values on the whole WM? the result = |alphabet|, of course.
     /*!
         * \author Fabrizio Barisione
         * \returns number of distinct values in the WMs. It also sets the value in the member 'num_dist_values' for future references.
         */
     uint64_t calculate_gao()
     {
+        //>>DEBUG
+        //for (int i = 0 ; i < 1000; i++){
+        //    std::cout << L[i] << ", ";
+        //}
+        //std::cout << " " << std::endl;
+        //<<DEBUG
         num_dist_values = 0;
         //Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
-        if (!build_crc_wm(0, L.size()))
+        if (build_crc_wm(0, L.size()))
         {
             num_dist_values = calculate_number_distinct_values_on_range(0, L.size(), 0, 0);
         }

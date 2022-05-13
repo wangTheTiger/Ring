@@ -49,6 +49,7 @@ endforeach(target)
 #Setting up tests
 set(TEST_TARGETS
     test_colored_range_counting_wm
+    test_colored_range_counting_wm2
     test_initializable_bitmap
 )
 
