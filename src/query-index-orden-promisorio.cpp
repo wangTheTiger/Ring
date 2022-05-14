@@ -198,7 +198,8 @@ void set_scores(vector<Triple*>& query, vector<string>& gao) {
 int main(int argc, char* argv[])
 {
     vector<string> dummy_queries;
-    bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/others_code/Ring_arroyuelo/Queries/Queries-wikidata-benchmark.txt", dummy_queries);
+    //bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/others_code/Ring_arroyuelo/Queries/Queries-wikidata-benchmark.txt", dummy_queries);
+    bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/Ring/Queries/Queries-wikidata-benchmark-reduced.txt", dummy_queries);
     triple_bwt graph;
     cout << " Loading the index..."; fflush(stdout);
     graph.load("/home/fabrizio/dcc_uchile/git_projects/others_code/Ring_arroyuelo/dat/wikidata-filtered-enumerated.dat");
@@ -216,7 +217,7 @@ int main(int argc, char* argv[])
     {
 
         /*First it builds the Colored Range Counting Wavelet Matrix representation of each Ring's BWT and then, per each one of them it calculates the number of different values*/
-        graph.calculate_gao();
+        //graph.calculate_gao(); TODO: 
         int count = 1;
         for (string query_string : dummy_queries) {
 

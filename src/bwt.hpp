@@ -47,27 +47,31 @@ private:
         */
     bool build_crc_wm(uint64_t x_s, uint64_t x_e)
     {
-        std::cout << "L.sigma : " << L.sigma << ", L.size() : " << L.size() << std::endl;
+        std::cout << "L.sigma : " << L.sigma << ", L.size() : " << L.size() << " x_s : " << x_s << " x_e : " << x_e << std::endl;
         sdsl::int_vector<> C(x_e - x_s);
         std::cout << "Building int vector to store CRC (size = " << C.size() << ")." << std::endl;
         //O ( (x_e - x_s) * log sigma)
         // CORE >>
-        C[0] = 0;
+        //C[0] = 0; //TODO: malo porque no necesariamente parto de la pos. 0, por ejem en mi ruteo parto de 17045851.
         {
             std::unordered_map<uint64_t, uint64_t> hash_map;
-            hash_map[L[0]] = 0;
-            for(uint64_t i = x_s + 1; i < x_e; i++){
+            //hash_map[L[0]] = 0; //TODO: malo porque no necesariamente parto de la pos. 0, por ejem en mi ruteo parto de 17045851.
+            for(uint64_t i = x_s; i < x_e; i++){
                 auto it = hash_map.find(L[i]);
                 if(it == hash_map.end()){
                     hash_map.insert({L[i], i});
-                    C[i] = 0;
+                    //C positions must start from 0 until x_e - x_s.
+                    C[i - x_s] = 0;
+                    //std::cout << C[i - x_s] << " ";fflush(stdout);
                 }else{
-                    C[i] = it->second + 1;
+                    C[i - x_s] = it->second + 1;
                     it->second = i;
+                    //std::cout << C[i - x_s] << " ";fflush(stdout);
                 }
             }
         }
         // CORE <<
+        //std::cout << "C = " << C << std::endl;
         std::cout << "Building the CRC WM based on the CRC int vector." << std::endl;
         construct_im(crc_L, C);
         try
@@ -269,7 +273,30 @@ public:
         {
             num_dist_values = calculate_number_distinct_values_on_range(0, L.size(), 0, 0);
         }
-        std::cout << "Num of distinct values : " << num_dist_values << std::endl;
+        //std::cout << "Num of distinct values : " << num_dist_values << std::endl;
+        return num_dist_values;
+    }
+
+    uint64_t calculate_gao(uint64_t l, uint64_t r)
+    {
+        //>>DEBUG
+        //for (int i = 0 ; i < 1000; i++){
+        //    std::cout << L[i] << ", ";
+        //}
+        //std::cout << " " << std::endl;
+        //<<DEBUG
+        std::cout << "Calling calculate_gao with range : [" << l << ", " << r << "]." << std::endl;
+        num_dist_values = 0;
+        //Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
+        if (build_crc_wm(l, r))
+        {
+            uint64_t rng_s = 0;
+            uint64_t rng_e = (r - 1) < 0 ? 0 : r - 1;
+            //num_dist_values = calculate_number_distinct_values_on_range(r, l, rng_s, rng_e);
+            //Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
+            num_dist_values = calculate_number_distinct_values_on_range(0, crc_L.size(), 0, 0);
+        }
+        //std::cout << "Num of distinct values : " << num_dist_values << std::endl;
         return num_dist_values;
     }
 };

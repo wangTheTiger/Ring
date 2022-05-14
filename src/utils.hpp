@@ -12,12 +12,18 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
         return open_interval.size();
     } else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_PSO();
-        uint64_t cur_p = graph.min_P(open_interval);
+        uint64_t cur_p = graph.min_P(open_interval);//¿Esto está de más o no?
         cur_p = graph.next_P(open_interval, triple_pattern->p->constant);
         if (cur_p == 0 || cur_p != triple_pattern->p->constant) {
             return 0;
         } else{
             bwt_interval i_p = graph.down_P(cur_p);
+            //DEBUG >>
+            //std::cout << "[" << i_p.left() << ", " << i_p.right() << "]" << std::endl;
+            uint64_t nTriples = 81426574;
+            //DEBUG <<
+            uint64_t num_distinct_values = graph.calculate_gao_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples); //values must be shifted back to the left, by substracting nTriples. Remember P is between nTriples + 1 and 2*nTriples.
+            std::cout << "num_distinct_values = " << num_distinct_values << " vs. interval size = " << i_p.size() << std::endl;
             return i_p.size();
         }
     } else if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable) {
@@ -98,9 +104,10 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b) {
 
 // Cambiar retorno
 vector<string> get_gao_min_gen(vector<Triple*> query, triple_bwt & graph) {
+    std::cout << " get_gao_min_gen " << std::endl;
     map<string, vector<uint64_t>> triple_values;
     map<string, vector<Triple*>> triples_var; 
-    for (Triple * triple_pattern : query) {
+     for (Triple * triple_pattern : query) {
         uint64_t triple_size = get_size_interval(triple_pattern, graph);
         if (triple_pattern->s->isVariable) {
           triple_values[triple_pattern->s->varname].push_back(triple_size);

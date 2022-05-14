@@ -854,5 +854,15 @@ public:
         BWT_P.calculate_gao();
         BWT_O.calculate_gao();
     }
+
+    uint64_t calculate_gao_BWT_S(uint64_t l, uint64_t r){
+        return BWT_S.calculate_gao(l,r);
+    }
+    uint64_t calculate_gao_BWT_P(uint64_t l, uint64_t r){
+        return BWT_P.calculate_gao(l,r);
+    }
+    uint64_t calculate_gao_BWT_O(uint64_t l, uint64_t r){
+        return BWT_O.calculate_gao(l,r);
+    }
 };
 #endif
