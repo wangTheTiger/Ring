@@ -1,28 +1,31 @@
 
-#include <sdsl/init_array.hpp>
+#include <sdsl/init_bitmap.hpp>
 #include <sdsl/int_vector.hpp>
 #include<iostream>
 int main()
 {
-    uint64_t MAX = 10;
-    //>>Bit Vector testing
-    sdsl::bit_vector bv(MAX, 0);
-    for (uint64_t i = 0; i < MAX; i++)
-    {
-        bv[i] = 1;
+    uint64_t MAX = 512;
+    sdsl::initializable_bitmap bitmap(MAX, 0);
+    std::cout << "Initializable bitmap, size in bytes = "<< ((float)bitmap.size_in_bytes()) << std::endl;
+    cout << "bitmap: ";
+    /*
+    Turing on bits at positions 5, 128, 257, 511 and 512. 
+    We get the memory address of the block as a whole (word size) and then we set as 1 the bit within the block at offset i & 64.
+    */
+    //std::cout << bitmap.atPos(5) << std::endl;
+    bitmap[5] |= 1ULL << (5 % 64);
+    //std::cout << bitmap.atPos(5) << std::endl;
+    //std::cout << bitmap.atPos(0) << std::endl;
+    //std::cout << bitmap.atPos(1) << std::endl;
+    bitmap[128] |= 1ULL << (128 % 64);
+    bitmap[257] |= 1ULL << (257 % 64);
+    bitmap[511] |= 1ULL << (511 % 64);
+    bitmap[512] |= 1ULL << (512 % 64);
+    /*
+    Then, we print all the bits out :-).
+    */
+    for (int i = 0 ; i < MAX; i++){
+        std::cout << bitmap.atPos(MAX - i);
     }
-    //<Bit Vector testing
-    //Building an init array of bit_vectors. (Not what I want but just to demonstrate an idea).
-    sdsl::initializable_array<sdsl::bit_vector> D_array(MAX, sdsl::bit_vector(MAX,0));
-    D_array[0] = sdsl::bit_vector(MAX,0);
-    D_array[1] = sdsl::bit_vector(MAX,1);
-    D_array[2] = sdsl::bit_vector(MAX,1);
-    std::cout << "D_array " << ((float)D_array.size_in_bytes()) << " bytes." << std::endl;
-    std::cout << "D_array.atPos(0) = " << D_array.atPos(0) << std::endl;
-    std::cout << "D_array.atPos(1) = " << D_array.atPos(1) << std::endl;
-    std::cout << "D_array.atPos(2) = " << D_array.atPos(2) << std::endl;
-    //The basic data structure at the hardware level of mainstream CPUs is a byte.
-    // Necesito algo asi, un arreglo inializable que reciba un tipo que tenga un solo bit. sdsl::initializable_array<1> D_array2(MAX, 1); <-- no se puede por comentario de arriba.
-    sdsl::initializable_array<uint8_t> D_array2(MAX, 0);
-    std::cout << "Initializable array of uint8_t (8 bytes) " << ((float)D_array2.size_in_bytes()) << " bytes = 8 bytes per cell x 10 cells + 8 bytes pointer." << std::endl;
+    std::cout << " " << std::endl;
 }
