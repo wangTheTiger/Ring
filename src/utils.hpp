@@ -12,19 +12,17 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
         return open_interval.size();
     } else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_PSO();
-        uint64_t cur_p = graph.min_P(open_interval);//¿Esto está de más o no?
+        uint64_t cur_p = graph.min_P(open_interval);//TODO: Is this function useful? we do the same thing in next_P.
         cur_p = graph.next_P(open_interval, triple_pattern->p->constant);
         if (cur_p == 0 || cur_p != triple_pattern->p->constant) {
             return 0;
         } else{
             bwt_interval i_p = graph.down_P(cur_p);
-            //DEBUG >>
-            //std::cout << "[" << i_p.left() << ", " << i_p.right() << "]" << std::endl;
-            uint64_t nTriples = 81426574;
-            //DEBUG <<
+            const uint64_t nTriples = graph.get_n_triples();
             uint64_t num_distinct_values = graph.calculate_gao_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples); //values must be shifted back to the left, by substracting nTriples. Remember P is between nTriples + 1 and 2*nTriples.
-            std::cout << "num_distinct_values = " << num_distinct_values << " vs. interval size = " << i_p.size() << std::endl;
-            return i_p.size();
+            //TODO: Store these variables in a file. std::cout << "num_distinct_values = " << num_distinct_values << " vs. interval size = " << i_p.size() << std::endl;
+            //return i_p.size();
+            return num_distinct_values;
         }
     } else if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_OSP();
@@ -104,11 +102,11 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b) {
 
 // Cambiar retorno
 vector<string> get_gao_min_gen(vector<Triple*> query, triple_bwt & graph) {
-    std::cout << " get_gao_min_gen " << std::endl;
     map<string, vector<uint64_t>> triple_values;
     map<string, vector<Triple*>> triples_var; 
      for (Triple * triple_pattern : query) {
         uint64_t triple_size = get_size_interval(triple_pattern, graph);
+        //Storing the triple_size of each variable for all triple_patterns.
         if (triple_pattern->s->isVariable) {
           triple_values[triple_pattern->s->varname].push_back(triple_size);
           triples_var[triple_pattern->s->varname].push_back(triple_pattern);
@@ -149,7 +147,7 @@ vector<string> get_gao_min_gen(vector<Triple*> query, triple_bwt & graph) {
         if (triple_values[it->first].size() == 1) {
             single_vars.push_back(it->first);
         } else {
-            varmin_pairs.push_back(pair<string, uint64_t>(it->first, *min_element(triple_values[it->first].begin(), triple_values[it->first].end())));
+            varmin_pairs.push_back(pair<string, uint64_t>(it->first, *min_element(triple_values[it->first].begin(), triple_values[it->first].end()))); 
             selectable_vars[it->first] = false;
         }
     }

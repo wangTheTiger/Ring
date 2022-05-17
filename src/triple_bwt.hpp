@@ -19,6 +19,7 @@
 #ifndef TRIPLE_BWT
 #define TRIPLE_BWT
 
+#include <chrono>
 #include <cstdint>
 #include "bwt.hpp"
 #include "bwt_interval.hpp"
@@ -863,6 +864,14 @@ public:
     }
     uint64_t calculate_gao_BWT_O(uint64_t l, uint64_t r){
         return BWT_O.calculate_gao(l,r);
+    }
+    const uint64_t get_n_triples() const{
+        return nTriples;
+    }
+    const std::chrono::duration<double> get_crc_wm_total_build_time_span() const{
+        //auto res = std::chrono::duration_cast<std::chrono::microseconds>(BWT_S.get_crc_wm_build_time_span() + BWT_P.get_crc_wm_build_time_span() + BWT_O.get_crc_wm_build_time_span());
+        //std::cout << (unsigned long long)(res.count()*1000000000ULL)  << std::endl;
+        return BWT_S.get_crc_wm_build_time_span() + BWT_P.get_crc_wm_build_time_span() + BWT_O.get_crc_wm_build_time_span();
     }
 };
 #endif

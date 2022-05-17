@@ -254,7 +254,7 @@ int main(int argc, char* argv[])
             //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
             stop = high_resolution_clock::now();
-            time_span = duration_cast<microseconds>(stop - start);
+            time_span = duration_cast<microseconds>(stop - start - graph.get_crc_wm_total_build_time_span());
             total_time = time_span.count();
 
             cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << endl;

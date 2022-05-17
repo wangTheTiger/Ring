@@ -20,6 +20,7 @@
 #ifndef BWT_T
 #define BWT_T
 
+#include <chrono>
 #include "Config.hpp"
 #include <exception> // std::exception
 #include <unordered_map>
@@ -38,6 +39,7 @@ class bwt
 
     std::vector<uint64_t> v1_aux;
     std::vector<uint64_t> v2_aux;
+    std::chrono::duration<double> crc_wm_build_time_span;
 
 private:
     //! Buiding Colored Range Counting Wavelet Matrix (CRC WM) representation of each Ring's BWT.
@@ -47,23 +49,27 @@ private:
         */
     bool build_crc_wm(uint64_t x_s, uint64_t x_e)
     {
-        std::cout << "L.sigma : " << L.sigma << ", L.size() : " << L.size() << " x_s : " << x_s << " x_e : " << x_e << std::endl;
+        std::chrono::high_resolution_clock::time_point start, stop;
         sdsl::int_vector<> C(x_e - x_s);
-        std::cout << "Building int vector to store CRC (size = " << C.size() << ")." << std::endl;
+        //std::cout << "L.sigma : " << L.sigma << ", L.size() : " << L.size() << " x_s : " << x_s << " x_e : " << x_e << std::endl;
+        //std::cout << "Building int vector to store CRC (size = " << C.size() << ")." << std::endl;
         //O ( (x_e - x_s) * log sigma)
         // CORE >>
-        //C[0] = 0; //TODO: malo porque no necesariamente parto de la pos. 0, por ejem en mi ruteo parto de 17045851.
+        start = std::chrono::high_resolution_clock::now();
         {
             std::unordered_map<uint64_t, uint64_t> hash_map;
-            //hash_map[L[0]] = 0; //TODO: malo porque no necesariamente parto de la pos. 0, por ejem en mi ruteo parto de 17045851.
-            for(uint64_t i = x_s; i < x_e; i++){
+            for (uint64_t i = x_s; i < x_e; i++)
+            {
                 auto it = hash_map.find(L[i]);
-                if(it == hash_map.end()){
+                if (it == hash_map.end())
+                {
                     hash_map.insert({L[i], i});
                     //C positions must start from 0 until x_e - x_s.
                     C[i - x_s] = 0;
                     //std::cout << C[i - x_s] << " ";fflush(stdout);
-                }else{
+                }
+                else
+                {
                     C[i - x_s] = it->second + 1;
                     it->second = i;
                     //std::cout << C[i - x_s] << " ";fflush(stdout);
@@ -72,11 +78,13 @@ private:
         }
         // CORE <<
         //std::cout << "C = " << C << std::endl;
-        std::cout << "Building the CRC WM based on the CRC int vector." << std::endl;
+        //std::cout << "Building the CRC WM based on the CRC int vector." << std::endl;
         construct_im(crc_L, C);
+        stop = std::chrono::high_resolution_clock::now();
+        crc_wm_build_time_span = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         try
         {
-            std::cout << "CRC WM size : " << crc_L.size() << std::endl;
+            //std::cout << "CRC WM size : " << crc_L.size() << std::endl;
             if (crc_L.size() > 0)
             {
                 return true;
@@ -103,7 +111,7 @@ private:
         */
     uint64_t calculate_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, uint64_t rng_s, uint64_t rng_e)
     {
-        std::cout << "calculate_number_distinct_values_on_range [" << x_s << ", " << x_e << "]" << std::endl;
+        //std::cout << "calculate_number_distinct_values_on_range [" << x_s << ", " << x_e << "]" << std::endl;
         auto res = crc_L.range_search_2d(x_s, x_e, rng_s, rng_e, false);
         return get<0>(res);
     }
@@ -279,13 +287,7 @@ public:
 
     uint64_t calculate_gao(uint64_t l, uint64_t r)
     {
-        //>>DEBUG
-        //for (int i = 0 ; i < 1000; i++){
-        //    std::cout << L[i] << ", ";
-        //}
-        //std::cout << " " << std::endl;
-        //<<DEBUG
-        std::cout << "Calling calculate_gao with range : [" << l << ", " << r << "]." << std::endl;
+        //std::cout << "Calling calculate_gao with range : [" << l << ", " << r << "]." << std::endl;
         num_dist_values = 0;
         //Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
         if (build_crc_wm(l, r))
@@ -294,10 +296,15 @@ public:
             uint64_t rng_e = (r - 1) < 0 ? 0 : r - 1;
             //num_dist_values = calculate_number_distinct_values_on_range(r, l, rng_s, rng_e);
             //Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
-            num_dist_values = calculate_number_distinct_values_on_range(0, crc_L.size(), 0, 0);
+            num_dist_values = calculate_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0); //TODO: why -1?
         }
         //std::cout << "Num of distinct values : " << num_dist_values << std::endl;
         return num_dist_values;
+    }
+
+    const std::chrono::duration<double> get_crc_wm_build_time_span() const
+    {
+        return crc_wm_build_time_span;
     }
 };
 #endif

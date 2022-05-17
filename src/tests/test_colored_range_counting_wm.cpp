@@ -20,24 +20,22 @@ int main()
     uint64_t x_s = 0;
     uint64_t x_e = C.size();
     //O ( (x_e - x_s) * log sigma)
-    C[0] = 0;
     {
         std::unordered_map<uint64_t, uint64_t> hash_map;
-        hash_map[L[0]] = 0;
-        std::cout << 0 << " ";fflush(stdout);
-        for(uint64_t i = x_s + 1; i < x_e; i++){
+        for(uint64_t i = x_s; i < x_e; i++){
             auto it = hash_map.find(L[i]);
             if(it == hash_map.end()){
                 hash_map.insert({L[i], i});
-                C[i] = 0;
+                C[i - x_s] = 0;
                 std::cout << C[i] << " ";fflush(stdout);
             }else{
-                C[i] = it->second + 1;
+                C[i - x_s] = it->second + 1;
                 std::cout << C[i] << " ";fflush(stdout);
                 it->second = i;
             }
         }
     }
+    std::cout << "" << std::endl;
     //3.
     //C es el arreglo C del paper de Muthukrishnan codificado como WT para S=abracadabra, con wtroot=00100010010 (ver 'wm_orig').
     //Finalmente, recordar que estamos trabajando con la variante Wavelet matrix por que esperamos alfabetos muy grandes.
