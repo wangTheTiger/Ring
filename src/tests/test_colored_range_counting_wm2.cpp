@@ -1,3 +1,8 @@
+
+/*! \file test_colored_range_counting_wm2.cpp
+    \brief A more advance test of the CRC WM creation + range search.
+    \author Fabrizio Barisione
+*/
 #include<iostream>
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/bit_vectors.hpp>

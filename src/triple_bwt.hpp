@@ -843,40 +843,48 @@ public:
         return I.get_cur_value() != I.end();
     }
 
-    //! TODO:
+    //! Calculates gao for a specific BWT.
     /*!
     * \author Fabrizio Barisione
-    * \returns (OLD) TODO: boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
-    * 'crc_bwt_[o|p|s]' and the number of distinct values as 'num_dist_values' in  BWT_S, BWT_P & BWT_O respectively.
+    * \returns uint64_t
     */
     uint64_t calculate_gao_BWT_S(uint64_t l, uint64_t r)
     {
         return BWT_S.calculate_gao(l, r);
     }
-    //! TODO:
+    //! Calculates gao for a specific BWT.
     /*!
     * \author Fabrizio Barisione
-    * \returns (OLD) TODO: boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
-    * 'crc_bwt_[o|p|s]' and the number of distinct values as 'num_dist_values' in  BWT_S, BWT_P & BWT_O respectively.
+    * \returns uint64_t
     */
     uint64_t calculate_gao_BWT_P(uint64_t l, uint64_t r)
     {
         return BWT_P.calculate_gao(l, r);
     }
-    //! TODO:
+    //! Calculates gao for a specific BWT.
     /*!
     * \author Fabrizio Barisione
-    * \returns (OLD) TODO: boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
-    * 'crc_bwt_[o|p|s]' and the number of distinct values as 'num_dist_values' in  BWT_S, BWT_P & BWT_O respectively.
+    * \returns uint64_t
     */
     uint64_t calculate_gao_BWT_O(uint64_t l, uint64_t r)
     {
         return BWT_O.calculate_gao(l, r);
     }
+    //! Gets the number of triples.
+    /*!
+    * \author Fabrizio Barisione
+    * \returns uint64_t
+    */
     const uint64_t get_n_triples() const
     {
         return nTriples;
     }
+    //! Get the total build time of the CRC WM construction + the range search.
+    // It is a functional but not elegant solution that could be improved.
+    /*!
+    * \author Fabrizio Barisione
+    * \returns uint64_t
+    */
     const double get_crc_wm_total_build_time_span() const
     {
         double bwt_s = BWT_S.get_crc_wm_build_time_span();
@@ -884,6 +892,12 @@ public:
         double bwt_o = BWT_O.get_crc_wm_build_time_span();
         return  bwt_s + bwt_p + bwt_o;
     }
+    //! Clears the 'crc_wm_build_time_span' member of each BWT.
+    // It is a functional but not elegant solution that could be improved.
+    /*!
+    * \author Fabrizio Barisione
+    * \returns uint64_t
+    */
     void clear_crc_wm_build_time_span()
     {
         BWT_S.clear_crc_wm_build_time_span();

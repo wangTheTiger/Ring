@@ -258,10 +258,12 @@ public:
         return pair<uint64_t, uint64_t>(s, e);
     }
 
-    //! TODO: 
+    //! First it builds a compact Colored Range Counting representation (CRC) of the BWT.L and then, it calculates the number of different values. Both CRC and BWT.L are Wavelet Matrices.
+    //! In a three dimension ring this function should be called 3 times.
     /*!
         * \author Fabrizio Barisione
-        * \param TODO:
+        * \param uint64_t l : left
+        * \param uint64_t r : right
         * \returns number of distinct values in the WMs. It also sets the value in the member 'num_dist_values' for future references.
         */
     uint64_t calculate_gao(uint64_t l, uint64_t r)
@@ -277,7 +279,7 @@ public:
             uint64_t rng_e = (r - 1) < 0 ? 0 : r - 1;
             //num_dist_values = calculate_number_distinct_values_on_range(r, l, rng_s, rng_e);
             //Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
-            num_dist_values = calculate_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0); //TODO: why -1?
+            num_dist_values = calculate_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
         }
         stop = std::chrono::high_resolution_clock::now();
         auto total_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
