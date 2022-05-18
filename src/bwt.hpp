@@ -25,7 +25,6 @@
 #include <exception> // std::exception
 #include <unordered_map>
 using namespace std;
-
 class bwt
 {
     bwt_type L;
@@ -39,7 +38,7 @@ class bwt
 
     std::vector<uint64_t> v1_aux;
     std::vector<uint64_t> v2_aux;
-    std::chrono::duration<double> crc_wm_build_time_span;
+    double total_crc_wm_build_time_span;
 
 private:
     //! Buiding Colored Range Counting Wavelet Matrix (CRC WM) representation of each Ring's BWT.
@@ -49,13 +48,11 @@ private:
         */
     bool build_crc_wm(uint64_t x_s, uint64_t x_e)
     {
-        std::chrono::high_resolution_clock::time_point start, stop;
         sdsl::int_vector<> C(x_e - x_s);
         //std::cout << "L.sigma : " << L.sigma << ", L.size() : " << L.size() << " x_s : " << x_s << " x_e : " << x_e << std::endl;
         //std::cout << "Building int vector to store CRC (size = " << C.size() << ")." << std::endl;
         //O ( (x_e - x_s) * log sigma)
         // CORE >>
-        start = std::chrono::high_resolution_clock::now();
         {
             std::unordered_map<uint64_t, uint64_t> hash_map;
             for (uint64_t i = x_s; i < x_e; i++)
@@ -80,8 +77,6 @@ private:
         //std::cout << "C = " << C << std::endl;
         //std::cout << "Building the CRC WM based on the CRC int vector." << std::endl;
         construct_im(crc_L, C);
-        stop = std::chrono::high_resolution_clock::now();
-        crc_wm_build_time_span = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         try
         {
             //std::cout << "CRC WM size : " << crc_L.size() << std::endl;
@@ -119,10 +114,11 @@ private:
 public:
     std::vector<uint64_t> C;
 
-    bwt() { ; }
+    bwt() { total_crc_wm_build_time_span = 0; }
 
     bwt(int_vector<> &_L, vector<uint64_t> &_C)
     {
+        total_crc_wm_build_time_span = 0;
         construct_im(L, _L);
 
         bit_vector C_aux = bit_vector(_C[_C.size() - 1] + 1 + _C.size(), 0);
@@ -262,33 +258,18 @@ public:
         return pair<uint64_t, uint64_t>(s, e);
     }
 
-    //! TODO: Important: what's the sense of calculating num of distinct values on the whole WM? the result = |alphabet|, of course.
+    //! TODO: 
     /*!
         * \author Fabrizio Barisione
+        * \param TODO:
         * \returns number of distinct values in the WMs. It also sets the value in the member 'num_dist_values' for future references.
         */
-    uint64_t calculate_gao()
-    {
-        //>>DEBUG
-        //for (int i = 0 ; i < 1000; i++){
-        //    std::cout << L[i] << ", ";
-        //}
-        //std::cout << " " << std::endl;
-        //<<DEBUG
-        num_dist_values = 0;
-        //Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
-        if (build_crc_wm(0, L.size()))
-        {
-            num_dist_values = calculate_number_distinct_values_on_range(0, L.size(), 0, 0);
-        }
-        //std::cout << "Num of distinct values : " << num_dist_values << std::endl;
-        return num_dist_values;
-    }
-
     uint64_t calculate_gao(uint64_t l, uint64_t r)
     {
         //std::cout << "Calling calculate_gao with range : [" << l << ", " << r << "]." << std::endl;
         num_dist_values = 0;
+        std::chrono::high_resolution_clock::time_point start, stop;// try with std:.chrono::steady_clock
+        start = std::chrono::high_resolution_clock::now();
         //Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
         if (build_crc_wm(l, r))
         {
@@ -298,13 +279,21 @@ public:
             //Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
             num_dist_values = calculate_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0); //TODO: why -1?
         }
+        stop = std::chrono::high_resolution_clock::now();
+        auto total_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+        total_crc_wm_build_time_span += total_time;
         //std::cout << "Num of distinct values : " << num_dist_values << std::endl;
         return num_dist_values;
     }
 
-    const std::chrono::duration<double> get_crc_wm_build_time_span() const
+    const double get_crc_wm_build_time_span() const
     {
-        return crc_wm_build_time_span;
+        return total_crc_wm_build_time_span;
+    }
+
+    void clear_crc_wm_build_time_span()
+    {
+        total_crc_wm_build_time_span = 0;
     }
 };
 #endif

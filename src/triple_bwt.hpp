@@ -849,29 +849,46 @@ public:
     * \returns (OLD) TODO: boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
     * 'crc_bwt_[o|p|s]' and the number of distinct values as 'num_dist_values' in  BWT_S, BWT_P & BWT_O respectively.
     */
-    void calculate_gao()
+    uint64_t calculate_gao_BWT_S(uint64_t l, uint64_t r)
     {
-        BWT_S.calculate_gao();
-        BWT_P.calculate_gao();
-        BWT_O.calculate_gao();
+        return BWT_S.calculate_gao(l, r);
     }
-
-    uint64_t calculate_gao_BWT_S(uint64_t l, uint64_t r){
-        return BWT_S.calculate_gao(l,r);
+    //! TODO:
+    /*!
+    * \author Fabrizio Barisione
+    * \returns (OLD) TODO: boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
+    * 'crc_bwt_[o|p|s]' and the number of distinct values as 'num_dist_values' in  BWT_S, BWT_P & BWT_O respectively.
+    */
+    uint64_t calculate_gao_BWT_P(uint64_t l, uint64_t r)
+    {
+        return BWT_P.calculate_gao(l, r);
     }
-    uint64_t calculate_gao_BWT_P(uint64_t l, uint64_t r){
-        return BWT_P.calculate_gao(l,r);
+    //! TODO:
+    /*!
+    * \author Fabrizio Barisione
+    * \returns (OLD) TODO: boolean depending whether the CRC WMs are created successfully or not. If true then the CRC WM are available as:
+    * 'crc_bwt_[o|p|s]' and the number of distinct values as 'num_dist_values' in  BWT_S, BWT_P & BWT_O respectively.
+    */
+    uint64_t calculate_gao_BWT_O(uint64_t l, uint64_t r)
+    {
+        return BWT_O.calculate_gao(l, r);
     }
-    uint64_t calculate_gao_BWT_O(uint64_t l, uint64_t r){
-        return BWT_O.calculate_gao(l,r);
-    }
-    const uint64_t get_n_triples() const{
+    const uint64_t get_n_triples() const
+    {
         return nTriples;
     }
-    const std::chrono::duration<double> get_crc_wm_total_build_time_span() const{
-        //auto res = std::chrono::duration_cast<std::chrono::microseconds>(BWT_S.get_crc_wm_build_time_span() + BWT_P.get_crc_wm_build_time_span() + BWT_O.get_crc_wm_build_time_span());
-        //std::cout << (unsigned long long)(res.count()*1000000000ULL)  << std::endl;
-        return BWT_S.get_crc_wm_build_time_span() + BWT_P.get_crc_wm_build_time_span() + BWT_O.get_crc_wm_build_time_span();
+    const double get_crc_wm_total_build_time_span() const
+    {
+        double bwt_s = BWT_S.get_crc_wm_build_time_span();
+        double bwt_p = BWT_P.get_crc_wm_build_time_span();
+        double bwt_o = BWT_O.get_crc_wm_build_time_span();
+        return  bwt_s + bwt_p + bwt_o;
+    }
+    void clear_crc_wm_build_time_span()
+    {
+        BWT_S.clear_crc_wm_build_time_span();
+        BWT_P.clear_crc_wm_build_time_span();
+        BWT_O.clear_crc_wm_build_time_span();
     }
 };
 #endif

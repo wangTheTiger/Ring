@@ -7,9 +7,10 @@
 #include "triple_bwt.hpp"
 
 uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
+    const uint64_t nTriples = graph.get_n_triples();
     if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_SPO();
-        return open_interval.size();
+        return open_interval.size();//This should be faster than calculating the CRC WM + range in the whole BWT.L object.
     } else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_PSO();
         uint64_t cur_p = graph.min_P(open_interval);//TODO: Is this function useful? we do the same thing in next_P.
@@ -18,8 +19,7 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
             return 0;
         } else{
             bwt_interval i_p = graph.down_P(cur_p);
-            const uint64_t nTriples = graph.get_n_triples();
-            uint64_t num_distinct_values = graph.calculate_gao_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples); //values must be shifted back to the left, by substracting nTriples. Remember P is between nTriples + 1 and 2*nTriples.
+            uint64_t num_distinct_values = graph.calculate_gao_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples); //Going from P to S: values must be shifted back to the left, by substracting nTriples. Remember P is between nTriples + 1 and 2*nTriples.
             //TODO: Store these variables in a file. std::cout << "num_distinct_values = " << num_distinct_values << " vs. interval size = " << i_p.size() << std::endl;
             //return i_p.size();
             return num_distinct_values;
@@ -32,7 +32,9 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
             return 0;
         } else{
             bwt_interval i_s = graph.down_O(cur_o);
-            return i_s.size();
+            uint64_t num_distinct_values = graph.calculate_gao_BWT_S(i_s.left() - nTriples * 2, i_s.right() - nTriples * 2); //Going from O to S: values must be shifted back to the left, by substracting nTriples. Remember O is between 2*nTriples + 1 and 3*nTriples.
+            //return i_s.size();
+            return num_distinct_values;
         }
     } else if (!triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_SPO();
@@ -42,7 +44,9 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
             return 0;
         } else{
             bwt_interval i_s = graph.down_S(cur_s);
-            return i_s.size();
+            uint64_t num_distinct_values = graph.calculate_gao_BWT_P(i_s.left() + nTriples, i_s.right() + nTriples); //Going from S to P: values must be shifted to the right by adding nTriples. Remember S is between 0 and nTriples and we want to go to P.
+            //return i_s.size();
+            return num_distinct_values;
         }
     } else if (!triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_SPO();
@@ -58,7 +62,9 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
               return 0;
             }
             bwt_interval i_p = graph.down_S_P(i_s, cur_s, cur_p);
-            return i_p.size();
+            uint64_t num_distinct_values = graph.calculate_gao_BWT_O(i_p.left() + nTriples, i_p.right() + nTriples); //Going from P to O: values must be shifted to the right, by adding nTriples. Remember O is between 2* nTriples + 1 and 3*nTriples.
+            //return i_p.size();
+            return num_distinct_values;
         }
     } else if (!triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_SOP();
@@ -74,7 +80,9 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
               return 0;
             }
             bwt_interval i_o = graph.down_S_O(i_s, cur_o);
-            return i_o.size();
+            uint64_t num_distinct_values = graph.calculate_gao_BWT_P(i_o.left() - nTriples, i_o.right() - nTriples); //Going from O to P:values must be shifted back to the left, by substracting nTriples. Remember O is between 2*nTriples + 1 and 3*nTriples.
+            //return i_o.size();
+            return num_distinct_values;
         }
     } else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && !triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_POS();
@@ -90,7 +98,9 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
               return 0;
             }
             bwt_interval i_o = graph.down_P_O(i_p, cur_p, cur_o);
-            return i_o.size();
+            uint64_t num_distinct_values = graph.calculate_gao_BWT_S(i_o.left() - nTriples * 2, i_o.right() - nTriples * 2); //Going from O to S: values must be shifted back to the left, by substracting nTriples. Remember O is between 2*nTriples + 1 and 3*nTriples.
+            //return i_o.size();
+            return num_distinct_values;
         }
     }
     return 0;
@@ -103,7 +113,7 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b) {
 // Cambiar retorno
 vector<string> get_gao_min_gen(vector<Triple*> query, triple_bwt & graph) {
     map<string, vector<uint64_t>> triple_values;
-    map<string, vector<Triple*>> triples_var; 
+    map<string, vector<Triple*>> triples_var;
      for (Triple * triple_pattern : query) {
         uint64_t triple_size = get_size_interval(triple_pattern, graph);
         //Storing the triple_size of each variable for all triple_patterns.

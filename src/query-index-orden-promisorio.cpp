@@ -31,7 +31,6 @@ using namespace boost;
 //#include<chrono>
 //#include<ctime>
 
-using namespace std::chrono;
 
 bool get_file_content(string filename, vector<string> & vector_of_strings)
 {
@@ -198,20 +197,21 @@ void set_scores(vector<Triple*>& query, vector<string>& gao) {
 int main(int argc, char* argv[])
 {
     vector<string> dummy_queries;
-    //bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/others_code/Ring_arroyuelo/Queries/Queries-wikidata-benchmark.txt", dummy_queries);
-    bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/Ring/Queries/Queries-wikidata-benchmark-reduced.txt", dummy_queries);
+    bool result = get_file_content(argv[2], dummy_queries);
+    //bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/Queries/Queries-wikidata-benchmark.txt", dummy_queries);
+    //bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/Ring/Queries/Queries-wikidata-benchmark-reduced.txt", dummy_queries);
     triple_bwt graph;
     cout << " Loading the index..."; fflush(stdout);
-    graph.load("/home/fabrizio/dcc_uchile/git_projects/others_code/Ring_arroyuelo/dat/wikidata-filtered-enumerated.dat");
+    graph.load(string(argv[1]));
+    //graph.load("/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated.dat");
 
     cout << endl << " Index loaded " << graph.size() << " bytes" << endl;
 
     std::ifstream ifs;
     uint64_t nQ = 0;
 
-    high_resolution_clock::time_point start, stop;
+    std::chrono::high_resolution_clock::time_point start, stop;
     double total_time = 0.0;
-    duration<double> time_span;
 
     if(result)
     {
@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
                 query.push_back(triple_pattern);
             }
 
-            start = high_resolution_clock::now();
+            start = std::chrono::high_resolution_clock::now();// try with std::chrono::steady_clock
 
             vector<string> gao = get_gao_min_gen(query, graph);
             set_scores(query, gao);
@@ -251,13 +251,14 @@ int main(int argc, char* argv[])
 
             std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
             lf.evaluate(0, &bindings, &number_of_results, begin);
-            //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-            stop = high_resolution_clock::now();
-            time_span = duration_cast<microseconds>(stop - start - graph.get_crc_wm_total_build_time_span());
-            total_time = time_span.count();
-
-            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << endl;
+            //std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    
+            stop = std::chrono::high_resolution_clock::now();
+            total_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+            const double aux = graph.get_crc_wm_total_build_time_span();
+            graph.clear_crc_wm_build_time_span();
+            //cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << " aux : "  << (unsigned long long)(aux*1000000000ULL) << endl;
+            cout << nQ <<  ";" << number_of_results << ";" << total_time << ";" << aux << ";" << total_time - aux << endl;
             nQ++;
 
             // cout << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << std::endl;

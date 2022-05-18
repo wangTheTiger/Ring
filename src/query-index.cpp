@@ -261,8 +261,10 @@ int main(int argc, char* argv[])
             stop = high_resolution_clock::now();
             time_span = duration_cast<microseconds>(stop - start);
             total_time = time_span.count();
-
-            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << endl;
+            const double aux = graph.get_crc_wm_total_build_time_span();
+            graph.clear_crc_wm_build_time_span();
+            //cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << " aux : " << (unsigned long long)(aux*1000000000ULL) << endl;
+            cout << nQ <<  ";" << number_of_results << ";" << total_time << ";" << aux << ";" << total_time - aux << endl;
             nQ++;
 
             // cout << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << std::endl;
