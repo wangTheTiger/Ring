@@ -4,17 +4,15 @@ Repository for the source code of the engine presented at the paper Worst-case O
 
 ## Instructions
 
-To run our code, **we have to install an extended version of the library SDSL**. Go to [this repository](https://github.com/darroyue/sdsl-lite) and follow the instructions.
+To run our code, **we have to install an extended version of the library SDSL**. Go to [this repository](https://github.com/wangTheTiger/sdsl-lite) and follow the instructions.
 
 After the extended version of SDSL is installed, we have to clone this repository and follow these steps:
 
-1. First we have to compile the code. We have to move to the root folder and then to the Ring folder. There, we should see our source code and a file called `build.sh`. This file contains the instruction that compiles the code. Just run:
+1. First we have to build the code with cmake. in the root directory run:
 
-```Bash
-bash build.sh
+```cmake .
+cmake --build . --config Release --target all
 ```
-
-Check that we do not have any errors.
 
 2. Download the version of Wikidata that we want to use:
 
