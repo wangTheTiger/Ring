@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 
     high_resolution_clock::time_point start, stop;
     double total_time = 0.0;
-    duration<double> time_span;
+    //duration<double> time_span;
 
     if(result)
     {
@@ -259,15 +259,9 @@ int main(int argc, char* argv[])
             //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
             stop = high_resolution_clock::now();
-            //IMPORTANT: Possible bug? I don't get the same result if I do:
-            total_time = duration_cast<microseconds>(stop - start).count();
-            // vs. this two commented lines of code:
             //time_span = duration_cast<microseconds>(stop - start);
-            //total_time = time_span.count();
-            const double aux = graph.get_crc_wm_total_build_time_span();
-            graph.clear_crc_wm_build_time_span();
-            //cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << " aux : " << (unsigned long long)(aux*1000000000ULL) << endl;
-            cout << nQ <<  ";" << number_of_results << ";" << total_time << ";" << aux << ";" << total_time - aux << endl;
+            auto total_time = duration_cast<microseconds>(stop - start).count();
+            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << endl;
             nQ++;
 
             // cout << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << std::endl;

@@ -879,7 +879,7 @@ public:
     {
         return nTriples;
     }
-    //! Get the total build time of the CRC WM construction + the range search.
+    //! Get the total build time of the CRC WM construction.
     // It is a functional but not elegant solution that could be improved.
     /*!
     * \author Fabrizio Barisione
@@ -892,6 +892,22 @@ public:
         double bwt_o = BWT_O.get_crc_wm_build_time_span();
         return  bwt_s + bwt_p + bwt_o;
     }
+
+    //! Get the total build time of the range search.
+    // It is a functional but not elegant solution that could be improved.
+    /*!
+    * \author Fabrizio Barisione
+    * \returns uint64_t
+    */
+    const double get_range_search_total_time_span() const
+    {
+        double bwt_s = BWT_S.get_range_search_time_span();
+        double bwt_p = BWT_P.get_range_search_time_span();
+        double bwt_o = BWT_O.get_range_search_time_span();
+        return  bwt_s + bwt_p + bwt_o;
+    }
+
+    
     //! Clears the 'crc_wm_build_time_span' member of each BWT.
     // It is a functional but not elegant solution that could be improved.
     /*!
@@ -900,9 +916,9 @@ public:
     */
     void clear_crc_wm_build_time_span()
     {
-        BWT_S.clear_crc_wm_build_time_span();
-        BWT_P.clear_crc_wm_build_time_span();
-        BWT_O.clear_crc_wm_build_time_span();
+        BWT_S.clear_times();
+        BWT_P.clear_times();
+        BWT_O.clear_times();
     }
 };
 #endif
