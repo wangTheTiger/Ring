@@ -875,7 +875,7 @@ public:
     * \author Fabrizio Barisione
     * \returns uint64_t
     */
-    const uint64_t get_n_triples() const
+    uint64_t get_n_triples() const
     {
         return nTriples;
     }
@@ -885,7 +885,7 @@ public:
     * \author Fabrizio Barisione
     * \returns uint64_t
     */
-    const double get_crc_wm_total_build_time_span() const
+    double get_crc_wm_total_build_time_span() const
     {
         double bwt_s = BWT_S.get_crc_wm_build_time_span();
         double bwt_p = BWT_P.get_crc_wm_build_time_span();
@@ -899,7 +899,7 @@ public:
     * \author Fabrizio Barisione
     * \returns uint64_t
     */
-    const double get_range_search_total_time_span() const
+    double get_range_search_total_time_span() const
     {
         double bwt_s = BWT_S.get_range_search_time_span();
         double bwt_p = BWT_P.get_range_search_time_span();
