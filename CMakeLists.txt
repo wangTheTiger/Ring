@@ -53,6 +53,8 @@ set(TEST_TARGETS
     test_colored_range_counting_wm
     test_colored_range_counting_wm2
     test_initializable_bitmap
+    test_ring_sop
+    test_ring_spo
 )
 
 add_test(NAME test_vm COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/test_wm)

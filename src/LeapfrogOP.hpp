@@ -5,19 +5,19 @@
 #include <map>
 #include <chrono>
 #include "Triple.h"
-#include "triple_bwt.hpp"
+#include "ring_spo.hpp"
 #include "Iterator.hpp"
 
 class LeapfrogOP {
 public:
     vector<string>* gao;
     vector<Triple*>* query;
-    triple_bwt* graph;
+    ring_spo* graph;
     map<string, vector<Iterator*>> query_iterators;
     vector<Iterator*> all_iterators;
     bool is_empty;
     
-    LeapfrogOP(vector<string>* gao, triple_bwt* graph, vector<Triple*>* query) {
+    LeapfrogOP(vector<string>* gao, ring_spo* graph, vector<Triple*>* query) {
         this->gao = gao;
         this->graph = graph;
         this->query = query;
@@ -95,7 +95,7 @@ public:
                 if (level >= (this->gao->size() - 1)) {
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
-                    
+
                     /*
                     for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                         cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";

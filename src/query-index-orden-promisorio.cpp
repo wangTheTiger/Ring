@@ -16,7 +16,8 @@
 #include <iostream>
 #include <utility>
 #include <map>
-#include "triple_bwt.hpp"
+#include "ring_spo.hpp"
+#include "ring_sop.hpp"
 #include <chrono>
 #include "Term.h"
 #include "Triple.h"
@@ -113,14 +114,14 @@ int main(int argc, char* argv[])
     vector<string> dummy_queries;
     bool result = get_file_content(argv[2], dummy_queries);
     //bool result = get_file_content("/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/Queries/Queries-wikidata-benchmark.txt", dummy_queries);
-    triple_bwt graph_spo;
+    ring_spo graph_spo;
     cout << " Loading the spo index..."; fflush(stdout);
     graph_spo.load(string(argv[1]));
     //graph_spo.load("/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated.dat");
 
     cout << endl << " spo index loaded " << graph_spo.size() << " bytes" << endl;
 
-    triple_bwt graph_sop;
+    ring_sop graph_sop;
     cout << " Loading the sop index..."; fflush(stdout);
     graph_sop.load(string(argv[1])+"_sop");
     //graph_sop.load("/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated.dat");

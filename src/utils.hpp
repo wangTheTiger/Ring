@@ -4,9 +4,10 @@
 #include <iostream>
 #include <set>
 #include "Triple.h"
-#include "triple_bwt.hpp"
+#include "ring_spo.hpp"
+#include "ring_sop.hpp"
 
-uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
+uint64_t get_size_interval(Triple * triple_pattern, ring_spo & graph) {
     const uint64_t nTriples = graph.get_n_triples();
     if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph.open_SPO();
@@ -111,7 +112,7 @@ uint64_t get_size_interval(Triple * triple_pattern, triple_bwt & graph) {
         * \author Fabrizio Barisione
         * \returns TODO:
         */
-uint64_t get_num_diff_values(Triple * triple_pattern, triple_bwt & graph_spo, triple_bwt & graph_sop) {
+uint64_t get_num_diff_values(Triple * triple_pattern, ring_spo & graph_spo, ring_sop & graph_sop) {
     const uint64_t nTriples = graph_spo.get_n_triples();
     if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
         bwt_interval open_interval = graph_spo.open_SPO();
@@ -220,7 +221,7 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b) {
 }
 
 // Cambiar retorno
-vector<string> get_gao_min_gen(vector<Triple*> query, triple_bwt & graph) {
+vector<string> get_gao_min_gen(vector<Triple*> query, ring_spo & graph) {
     map<string, vector<uint64_t>> triple_values;
     map<string, vector<Triple*>> triples_var;
      for (Triple * triple_pattern : query) {
@@ -308,7 +309,7 @@ vector<string> get_gao_min_gen(vector<Triple*> query, triple_bwt & graph) {
         * \author Fabrizio Barisione
         * \returns Vector of strings representing variable order.
         */
-vector<string> get_gao(vector<Triple*> query, triple_bwt & graph_spo, triple_bwt & graph_sop) {
+vector<string> get_gao(vector<Triple*> query, ring_spo & graph_spo, ring_sop & graph_sop) {
     map<string, vector<uint64_t>> triple_values;
     map<string, vector<Triple*>> triples_var;
      for (Triple * triple_pattern : query) {

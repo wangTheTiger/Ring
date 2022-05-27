@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/build-index",
-            "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated.dat"],
+            "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated-reduced.dat"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -31,6 +31,47 @@
             "program": "${workspaceFolder}/build/query-index-orden-promisorio",
             "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated.dat",
                     "/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/Queries/Queries-wikidata-benchmark.txt"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Test sop ring",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test_ring_sop",
+            "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated-reduced.dat"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+
+        {
+            "name": "Test spo ring",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test_ring_spo",
+            "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated-reduced.dat"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

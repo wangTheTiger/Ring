@@ -1,6 +1,6 @@
 /*
- * triple_bwt.hpp
- * Copyright (C) 2020 Author name removed for double blind evaluation
+ * RING_SOP.hpp
+ * Copyright (C) 2022
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,8 +16,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRIPLE_BWT
-#define TRIPLE_BWT
+#ifndef RING_SOP
+#define RING_SOP
 
 #include <chrono>
 #include <cstdint>
@@ -27,11 +27,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-class triple_bwt
+class ring_sop
 {
     bwt BWT_S;
-    bwt BWT_P;
     bwt BWT_O;
+    bwt BWT_P;
 
     uint64_t max_S;
     uint64_t max_P;
@@ -42,42 +42,42 @@ class triple_bwt
     uint64_t sigma_O;
 
 public:
-    triple_bwt() { ; }
+    ring_sop() { ; }
 
     // Assumes the triples have been stored in a vector<spo_triple>
-    triple_bwt(vector<spo_triple> &D)
+    ring_sop(vector<spo_triple> &D)
     {
         uint64_t i, pos_c;
         vector<spo_triple>::iterator it, triple_begin = D.begin(), triple_end = D.end();
         uint64_t n = nTriples = triple_end - triple_begin;
         int_vector<32> bwt_aux(3 * n);
 
-        //cout << "  > Determining alphabets of S; P; O..."; fflush(stdout);
+        //cout << "  > Determining alphabets of S; O; P..."; fflush(stdout);
         {
             set<uint64_t> alphabet_S, alphabet_P, alphabet_O;
             for (it = triple_begin, i = 0; i < n; i++, it++)
             {
                 alphabet_S.insert(std::get<0>(*it));
-                alphabet_P.insert(std::get<1>(*it));
-                alphabet_O.insert(std::get<2>(*it));
+                alphabet_O.insert(std::get<1>(*it));
+                alphabet_P.insert(std::get<2>(*it));
             }
 
             //cout << "Done" << endl; fflush(stdout);
             sigma_S = alphabet_S.size();
-            sigma_P = alphabet_P.size();
             sigma_O = alphabet_O.size();
+            sigma_P = alphabet_P.size();
             max_S = *alphabet_S.rbegin();
-            max_P = *alphabet_P.rbegin();
             max_O = *alphabet_O.rbegin();
+            max_P = *alphabet_P.rbegin();
             alphabet_S.clear();
-            alphabet_P.clear();
             alphabet_O.clear();
-            cout << " Maximum sizes. S = " << max_S << ", P = " << max_P << ", O = " << max_O << endl;
+            alphabet_P.clear();
+            cout << " Maximum sizes. S = " << max_S << ", O = " << max_O << ", P = " << max_P << endl;
         }
-        //cout << "sigma S = " << sigma_S << endl;
-        //cout << "sigma P = " << sigma_P << endl;
-        //cout << "sigma O = " << sigma_O << endl;
-        //cout << "  > Determining number of elements per symbol..."; fflush(stdout);
+        cout << "sigma S = " << sigma_S << endl;
+        cout << "sigma O = " << sigma_O << endl;
+        cout << "sigma P = " << sigma_P << endl;
+        cout << "  > Determining number of elements per symbol..."; fflush(stdout);
         uint64_t alphabet_SO = (max_S < max_O) ? max_O : max_S;
 
         std::map<uint64_t, uint64_t> M_O, M_S, M_P;
@@ -93,42 +93,45 @@ public:
 
         for (it = triple_begin, i = 0; i < n; i++, it++)
         {
-            M_O[std::get<2>(*it)] = M_O[std::get<2>(*it)] + 1;
             M_S[std::get<0>(*it)] = M_S[std::get<0>(*it)] + 1;
-            M_P[std::get<1>(*it)] = M_P[std::get<1>(*it)] + 1;
+            M_O[std::get<1>(*it)] = M_O[std::get<1>(*it)] + 1;
+            M_P[std::get<2>(*it)] = M_P[std::get<2>(*it)] + 1;
         }
-        //cout << "Done" << endl; fflush(stdout);
-        //cout << "  > Sorting out triples..."; fflush(stdout);
+        cout << "Done" << endl; fflush(stdout);
+        cout << "  > Sorting out triples..."; fflush(stdout);
         // Sorts the triples lexycographically
         sort(triple_begin, triple_end);
-        //cout << "Done" << endl; fflush(stdout);
+        cout << "Done" << endl; fflush(stdout);
         {
             int_vector<> t(3 * n + 2);
-            //cout << "  > Generating int vector of the triples..."; fflush(stdout);
+            cout << "  > Generating int vector of the triples..."; fflush(stdout);
             for (i = 0, it = triple_begin; it != triple_end; it++, i++)
             {
-                t[3 * i] = std::get<0>(*it);
-                t[3 * i + 1] = std::get<1>(*it) + max_S;
-                t[3 * i + 2] = std::get<2>(*it) + max_S + max_P;
+                t[3 * i] = std::get<0>(*it); //S
+                t[3 * i + 1] = std::get<1>(*it) + max_S; //O
+                t[3 * i + 2] = std::get<2>(*it) + max_S + max_O; //P
+                std::cout << t[3 * i] << "," << std::get<1>(*it) << "," << std::get<2>(*it) << std::endl;
             }
             t[3 * n] = max_S + max_P + max_O + 1;
             t[3 * n + 1] = 0;
-            D.clear();
-            D.shrink_to_fit();
-            //cout << "Size of D " << D.size() << " elements" << endl;
+
+            std::cout << t << std::endl;
+            //D.clear();
+            //D.shrink_to_fit();
+            cout << "Size of D " << D.size() << " elements" << endl;
             util::bit_compress(t);
-            //cout << "Done" << endl; fflush(stdout);
-            //cout << "t size " << size_in_bytes(t) << endl;
+            cout << "Done" << endl; fflush(stdout);
+            cout << "t size " << size_in_bytes(t) << endl;
             //int_vector<> bwt_aux(3*n);
 
             {
                 int_vector<> sa;
-                //cout << "  > Building the suffix array" << endl;
+                cout << "  > Building the suffix array" << endl;
 
                 qsufsort::construct_sa(sa, t);
 
-                //cout << "  > Suffix array built " << size_in_bytes(sa) << " bytes" <<  endl;
-                //cout << "  > Building the global BWT" << endl;
+                cout << "  > Suffix array built " << size_in_bytes(sa) << " bytes" <<  endl;
+                cout << "  > Building the global BWT" << endl;
 
                 uint64_t j;
                 for (j = i = 0; i < sa.size(); i++)
@@ -143,39 +146,44 @@ public:
                 }
             }
         }
-        //cout << "  > Building BWT_O" << endl; fflush(stdout);
-        // First O
+        std::cout << "BWT: " << std::endl;
+        std::cout << bwt_aux << std::endl;
+        cout << "  > Building BWT_P" << endl; fflush(stdout);
+        // First P
         {
-            int_vector<> O(n + 1);
+            int_vector<> P(n + 1);
             uint64_t j = 1, c, c_aux;
-            vector<uint64_t> C_O;
-            O[0] = 0;
-            for (i = 1; i < n; i++)
-                O[j++] = bwt_aux[i] - (max_S + max_P);
+            vector<uint64_t> C_P;
+            P[0] = 0;
+            for (i = 1; i < n; i++){
+                P[j++] = bwt_aux[i] - (max_S + max_O);
+                //cout << "P["<< j - 1 << "] = "<< bwt_aux[i] - (max_S + max_O) << " | " << bwt_aux[i] << " - " <<(max_S + max_O)<< endl;
+            }
 
             // This is for making the bwt of triples circular
-            O[j] = bwt_aux[0] - (max_S + max_P);
-            util::bit_compress(O);
-
+            P[j] = bwt_aux[0] - (max_S + max_O);
+            cout << "P["<< j << "] = "<< bwt_aux[0] - (max_S + max_O) << " | " << bwt_aux[0] << " - " <<(max_S + max_O)<< endl;
+            util::bit_compress(P);
+            //pre requisites to build the C bitmap. We use Map of S since they represent the range of P.
             uint64_t cur_pos = 1;
 
-            C_O.push_back(0); // Dummy value
-            C_O.push_back(cur_pos);
+            C_P.push_back(0); // Dummy value
+            C_P.push_back(cur_pos);
             for (c = 2; c <= alphabet_SO; c++)
             {
                 cur_pos += M_S[c - 1];
-                C_O.push_back(cur_pos);
+                C_P.push_back(cur_pos);
             }
-            C_O.push_back(n + 1);
-            C_O.shrink_to_fit();
+            C_P.push_back(n + 1);
+            C_P.shrink_to_fit();
 
             M_S.clear();
 
-            // builds the WT for BWT(O)
-            BWT_O = bwt(O, C_O);
+            // builds the WT for BWT(P)
+            BWT_P = bwt(P, C_P);
         }
 
-        //cout << "  > Building BWT_S" << endl; fflush(stdout);
+        cout << "  > Building BWT_S" << endl; fflush(stdout);
         // Then S
         {
             int_vector<> S(n + 1);
@@ -192,47 +200,47 @@ public:
             uint64_t cur_pos = 1;
             C_S.push_back(0); // Dummy value
             C_S.push_back(cur_pos);
-            for (c = 2; c <= max_P; c++)
+            for (c = 2; c <= alphabet_SO; c++)
             {
-                cur_pos += M_P[c - 1];
+                cur_pos += M_O[c - 1];
                 C_S.push_back(cur_pos);
             }
             C_S.push_back(n + 1);
             C_S.shrink_to_fit();
 
-            M_P.clear();
+            M_O.clear();
 
             BWT_S = bwt(S, C_S);
         }
 
-        //cout << "  > Building BWT_P" << endl; fflush(stdout);
-        // Then P
+        cout << "  > Building BWT_O" << endl; fflush(stdout);
+        // Then O
         {
-            int_vector<> P(n + 1);
+            int_vector<> O(n + 1);
             uint64_t j = 1, c;
-            vector<uint64_t> C_P;
+            vector<uint64_t> C_O;
 
-            P[0] = 0;
+            O[0] = 0;
             while (i < 3 * n)
             {
-                P[j++] = bwt_aux[i++] - max_S;
+                O[j++] = bwt_aux[i++] - max_S;
             }
-            util::bit_compress(P);
+            util::bit_compress(O);
 
             uint64_t cur_pos = 1;
-            C_P.push_back(0); // Dummy value
-            C_P.push_back(cur_pos);
-            for (c = 2; c <= alphabet_SO; c++)
+            C_O.push_back(0); // Dummy value
+            C_O.push_back(cur_pos);
+            for (c = 2; c <= max_P; c++)
             {
-                cur_pos += M_O[c - 1];
-                C_P.push_back(cur_pos);
+                cur_pos += M_P[c - 1];
+                C_O.push_back(cur_pos);
             }
-            C_P.push_back(n + 1);
-            C_P.shrink_to_fit();
+            C_O.push_back(n + 1);
+            C_O.shrink_to_fit();
 
-            M_O.clear();
+            M_P.clear();
 
-            BWT_P = bwt(P, C_P);
+            BWT_O = bwt(O, C_O);
         }
         cout << "-- Index constructed successfully" << endl;
         fflush(stdout);
@@ -345,13 +353,13 @@ public:
     /**********************************/
     // Functions for PSO
     //
-
+    /*
     bwt_interval open_PSO()
     {
         return bwt_interval(2 * nTriples + 1, 3 * nTriples);
     }
 
-    /**********************************/
+    //
     // P->S  (simulates going down in the trie)
     // Returns an interval within BWT_O
     bwt_interval down_P_S(bwt_interval &p_int, uint64_t s)
@@ -410,17 +418,17 @@ public:
     {
         return BWT_O.values_in_range(I.left(), I.right(), sigma_S + sigma_O);
     }
-
+    */
     /**********************************/
     // Functions for OPS
     //
-
+    /*
     bwt_interval open_OPS()
     {
         return bwt_interval(1, nTriples);
     }
 
-    /**********************************/
+    //
     // O->P  (simulates going down in the trie)
     // Returns an interval within BWT_S
     bwt_interval down_O_P(bwt_interval &o_int, uint64_t p)
@@ -483,17 +491,17 @@ public:
     {
         return BWT_S.values_in_range(I.left() - nTriples, I.right() - nTriples, sigma_S + sigma_O);
     }
-
+    */
     /**********************************/
     // Function for SOP
     //
-
+    /*
     bwt_interval open_SOP()
     {
         return bwt_interval(nTriples + 1, 2 * nTriples);
     }
 
-    /**********************************/
+    //
     // S->O  (simulates going down in the trie)
     // Returns an interval within BWT_P
     bwt_interval down_S_O(bwt_interval &s_int, uint64_t o)
@@ -556,10 +564,11 @@ public:
     {
         return BWT_P.values_in_range(I.left() - 2 * nTriples, I.right() - 2 * nTriples, sigma_P);
     }
-
+    */
     /**********************************/
     // Functions for SPO
     //
+    /*
     bwt_interval open_SPO()
     {
         return bwt_interval(nTriples + 1, 2 * nTriples);
@@ -650,11 +659,11 @@ public:
     {
         return I.get_cur_value() != I.end();
     }
-
+    */
     /**********************************/
     // Functions for POS
     //
-
+    /*
     bwt_interval open_POS()
     {
         return bwt_interval(2 * nTriples + 1, 3 * nTriples);
@@ -745,11 +754,11 @@ public:
     {
         return I.get_cur_value() != I.end();
     }
-
+    */
     /**********************************/
     // Functions for OSP
     //
-
+    /*
     bwt_interval open_OSP()
     {
         return bwt_interval(1, nTriples);
@@ -842,7 +851,7 @@ public:
     {
         return I.get_cur_value() != I.end();
     }
-
+    */
     //! Calculates gao for a specific BWT.
     /*!
     * \author Fabrizio Barisione
@@ -920,5 +929,52 @@ public:
         BWT_P.clear_times();
         BWT_O.clear_times();
     }
+    std::vector<uint64_t> get_P_given_S(uint64_t symbolId){
+        std::vector<u_int64_t> results;
+        //based on ring query debugging. at minimum one needs to call min_P_in_S (1 time) and next_P_in_S (N -1 times).
+        auto num_elems = BWT_P.nElems(symbolId);
+        //TODO: LISTAR LOS VALORES, SOMEHOW. :-)
+        return results;
+    }
+    /*
+    std::vector<uint64_t> get_S_given_O(uint64_t symbolId){
+        std::vector<u_int64_t> results;
+        //based on ring query debugging. check getPGivenS
+        auto num_elems = BWT_P.nElems(symbolId);
+        bwt_interval aux_i = bwt_interval(symbolId, num_elems);
+        auto current_p = min_S_in_O(aux_i, symbolId);
+        uint64_t old_p = 0;
+        results.push_back(current_p);
+        for(int q=0; q < num_elems; q++){
+            current_p = next_S_in_O(aux_i, symbolId, ++current_p); 
+            if(current_p <= old_p){
+                break;
+            }
+            old_p = current_p;
+            results.push_back(current_p);
+        }
+        results.shrink_to_fit();
+        return results;
+    }
+    std::vector<uint64_t> get_O_given_P(uint64_t symbolId){
+        std::vector<u_int64_t> results;
+        //based on ring query debugging. check getPGivenS
+        auto num_elems = BWT_S.nElems(symbolId);
+        bwt_interval aux_i = bwt_interval(symbolId, num_elems);
+        auto current_p = min_O_in_P(aux_i, symbolId);
+        uint64_t old_p = 0;
+        results.push_back(current_p);
+        for(int q=0; q < num_elems; q++){
+            current_p = next_O_in_P(aux_i, symbolId, ++current_p);
+            if(current_p <= old_p){
+                break;
+            }
+            old_p = current_p;
+            results.push_back(current_p);
+        }
+        results.shrink_to_fit();
+        return results;
+    }
+    */
 };
 #endif

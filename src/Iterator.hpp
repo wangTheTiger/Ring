@@ -3,12 +3,12 @@
 
 #include <iostream>
 #include "Triple.h"
-#include "triple_bwt.hpp"
+#include "ring_spo.hpp"
 
 class Iterator {
 public:
     Triple* triple;
-    triple_bwt* graph;
+    ring_spo* graph;
     string index_name;
     int current_level;
     bwt_interval i_s;
@@ -19,7 +19,7 @@ public:
     uint64_t cur_o;
     bool is_empty;
     
-    Iterator(Triple* triple, triple_bwt* graph) {
+    Iterator(Triple* triple, ring_spo* graph) {
         this->triple = triple;
         this->graph = graph;
         this->current_level = -1;

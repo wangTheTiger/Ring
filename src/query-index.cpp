@@ -16,7 +16,7 @@
 #include <iostream>
 #include <utility>
 #include <map>
-#include "triple_bwt.hpp"
+#include "ring_spo.hpp"
 #include <chrono>
 #include "Term.h"
 #include "Triple.h"
@@ -148,7 +148,7 @@ vector<string> get_gao(vector<Triple*> query) {
 
 }
 
-vector<string> get_gao_min(vector<Triple*> query, triple_bwt & graph) {
+vector<string> get_gao_min(vector<Triple*> query, ring_spo & graph) {
     map<string, vector<float>> triple_values;
     for (Triple * triple_pattern : query) {
 
@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
     vector<string> dummy_queries;
     bool result = get_file_content(argv[2], dummy_queries);
 
-    triple_bwt graph;
+    ring_spo graph;
 
     cout << " Loading the index..."; fflush(stdout);
     graph.load(string(argv[1]));
