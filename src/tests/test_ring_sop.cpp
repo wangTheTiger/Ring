@@ -13,11 +13,22 @@ int main(int argc, char* argv[])
     for(auto &predicate: predicates){
         std::cout << "subject_id: " << subject << ", predicate_id: " << predicate << "\n";
     }
-    /*
-    uint64_t object = 19650523;
-    auto subjects = graph_sop.get_S_given_O(object);
-    for(auto &subject: subjects){
-        std::cout << "object: " << object << ", subject_id: " << subject << "\n";
+
+    subject = 3;
+    predicates = graph_sop.get_P_given_S(subject);
+    for(auto &predicate: predicates){
+        std::cout << "subject_id: " << subject << ", predicate_id: " << predicate << "\n";
     }
-    */
+
+    subject = 5;
+    predicates = graph_sop.get_P_given_S(subject);
+    for(auto &predicate: predicates){
+        std::cout << "subject_id: " << subject << ", predicate_id: " << predicate << "\n";
+    }
+
+    uint64_t predicate = 406;
+    auto objects = graph_sop.get_O_given_P(predicate);
+    for(auto &object: objects){
+        std::cout << "predicate: " << predicate << ", object : " << object << "\n";
+    }
 }

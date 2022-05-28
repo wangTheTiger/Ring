@@ -110,12 +110,12 @@ public:
                 t[3 * i] = std::get<0>(*it); //S
                 t[3 * i + 1] = std::get<1>(*it) + max_S; //O
                 t[3 * i + 2] = std::get<2>(*it) + max_S + max_O; //P
-                std::cout << t[3 * i] << "," << std::get<1>(*it) << "," << std::get<2>(*it) << std::endl;
+                //std::cout << t[3 * i] << "," << std::get<1>(*it) << "," << std::get<2>(*it) << std::endl;
             }
             t[3 * n] = max_S + max_P + max_O + 1;
             t[3 * n + 1] = 0;
 
-            std::cout << t << std::endl;
+            //std::cout << t << std::endl;
             //D.clear();
             //D.shrink_to_fit();
             cout << "Size of D " << D.size() << " elements" << endl;
@@ -146,8 +146,8 @@ public:
                 }
             }
         }
-        std::cout << "BWT: " << std::endl;
-        std::cout << bwt_aux << std::endl;
+        //std::cout << "BWT: " << std::endl;
+        //std::cout << bwt_aux << std::endl;
         cout << "  > Building BWT_P" << endl; fflush(stdout);
         // First P
         {
@@ -162,7 +162,7 @@ public:
 
             // This is for making the bwt of triples circular
             P[j] = bwt_aux[0] - (max_S + max_O);
-            cout << "P["<< j << "] = "<< bwt_aux[0] - (max_S + max_O) << " | " << bwt_aux[0] << " - " <<(max_S + max_O)<< endl;
+            //cout << "P["<< j << "] = "<< bwt_aux[0] - (max_S + max_O) << " | " << bwt_aux[0] << " - " <<(max_S + max_O)<< endl;
             util::bit_compress(P);
             //pre requisites to build the C bitmap. We use Map of S since they represent the range of P.
             uint64_t cur_pos = 1;
@@ -558,13 +558,17 @@ public:
     {
         return I.get_cur_value() != I.end();
     }
-
+*/
     std::vector<std::pair<uint64_t, uint64_t>>
     all_P_in_range(bwt_interval &I)
     {
-        return BWT_P.values_in_range(I.left() - 2 * nTriples, I.right() - 2 * nTriples, sigma_P);
+        return BWT_P.values_in_range(I.left(), I.right(), max_P);
     }
-    */
+    std::vector<std::pair<uint64_t, uint64_t>>
+    all_O_in_range(bwt_interval &I)
+    {
+        return BWT_O.values_in_range(I.left(), I.right(), max_O);
+    }
     /**********************************/
     // Functions for SPO
     //
@@ -931,9 +935,23 @@ public:
     }
     std::vector<uint64_t> get_P_given_S(uint64_t symbolId){
         std::vector<u_int64_t> results;
-        //based on ring query debugging. at minimum one needs to call min_P_in_S (1 time) and next_P_in_S (N -1 times).
-        auto num_elems = BWT_P.nElems(symbolId);
-        //TODO: LISTAR LOS VALORES, SOMEHOW. :-)
+        //auto num_elems = BWT_P.nElems(symbolId);
+        bwt_interval aux_i = bwt_interval(BWT_P.get_C(symbolId) , BWT_P.get_C(symbolId + 1) -1);
+        auto values = all_P_in_range(aux_i);
+        for (auto& value : values) {
+            //std::cout<< value.first << " - " << value.second << std::endl;
+            results.push_back(value.second);
+        }
+        return results;
+    }
+    std::vector<uint64_t> get_O_given_P(uint64_t symbolId){
+        std::vector<u_int64_t> results;
+        bwt_interval aux_i = bwt_interval(BWT_O.get_C(symbolId) , BWT_O.get_C(symbolId + 1) -1);
+        auto values = all_O_in_range(aux_i);
+        for (auto& value : values) {
+            //std::cout<< value.first << " - " << value.second << std::endl;
+            results.push_back(value.second);
+        }
         return results;
     }
     /*
@@ -946,7 +964,7 @@ public:
         uint64_t old_p = 0;
         results.push_back(current_p);
         for(int q=0; q < num_elems; q++){
-            current_p = next_S_in_O(aux_i, symbolId, ++current_p); 
+            current_p = next_S_in_O(aux_i, symbolId, ++current_p);
             if(current_p <= old_p){
                 break;
             }

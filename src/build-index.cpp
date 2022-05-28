@@ -22,7 +22,8 @@ int main(int argc, char **argv)
     D.shrink_to_fit();
 
     //2. Building the Index SPO - OSP - POS (Cyclic)
-    /*{
+    {
+        cout << " Building the SPO Index " << endl;
         cout << "--Indexing " << D.size() << " triples" << endl;
         memory_monitor::start();
         auto start = timer::now();
@@ -37,7 +38,7 @@ int main(int argc, char **argv)
 
         cout << duration_cast<seconds>(stop-start).count() << " seconds." << endl;
         cout << memory_monitor::peak() << " bytes." << endl;
-    }*/
+    }
 
     for (uint64_t i = 0; i < D.size(); i++){
         auto& t = D[i];
@@ -49,6 +50,7 @@ int main(int argc, char **argv)
     }
     //3. Building the reverse Index SOP - PSO - OPS (Cyclic)
     {
+        cout << " Building the SPO reverse Index " << endl;
         cout << "--Indexing " << D.size() << " triples" << endl;
         memory_monitor::start();
         auto start = timer::now();
