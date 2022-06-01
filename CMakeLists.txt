@@ -40,7 +40,6 @@ add_library(ringlib STATIC ${sources})
 set(BUILD_TARGETS
     build-index
     query-index
-    query-index-orden-promisorio
 )
 
 foreach(target ${BUILD_TARGETS})

@@ -105,9 +105,9 @@ private:
         * \param rng_e TODO:
         * \returns TODO:
         */
-    uint64_t calculate_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, uint64_t rng_s, uint64_t rng_e)
+    uint64_t get_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, uint64_t rng_s, uint64_t rng_e)
     {
-        //std::cout << "calculate_number_distinct_values_on_range [" << x_s << ", " << x_e << "]" << std::endl;
+        //std::cout << "get_number_distinct_values_on_range [" << x_s << ", " << x_e << "]" << std::endl;
         auto res = crc_L.range_search_2d(x_s, x_e, rng_s, rng_e, false);
         return get<0>(res);
     }
@@ -266,9 +266,9 @@ public:
         * \param uint64_t r : right
         * \returns number of distinct values in the WMs. It also sets the value in the member 'num_dist_values' for future references.
         */
-    uint64_t calculate_gao(uint64_t l, uint64_t r)
+    uint64_t get_number_distinct_values(uint64_t l, uint64_t r)
     {
-        //std::cout << "Calling calculate_gao with range : [" << l << ", " << r << "]." << std::endl;
+        //std::cout << "Calling get_number_distinct_values with range : [" << l << ", " << r << "]." << std::endl;
         num_dist_values = 0;
         std::chrono::high_resolution_clock::time_point start, stop;// try with std:.chrono::steady_clock
         start = std::chrono::high_resolution_clock::now();
@@ -286,8 +286,8 @@ public:
             start = std::chrono::high_resolution_clock::now();
 
             //Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
-            //num_dist_values = calculate_number_distinct_values_on_range(r, l, rng_s, rng_e);
-            num_dist_values = calculate_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
+            //num_dist_values = get_number_distinct_values_on_range(r, l, rng_s, rng_e);
+            num_dist_values = get_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
 
             stop = std::chrono::high_resolution_clock::now();
             auto total_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();

@@ -559,11 +559,20 @@ public:
         return I.get_cur_value() != I.end();
     }
 */
+    //! TODO:
+    /*!
+    * \returns std::vector<std::pair<uint64_t, uint64_t>>
+    */
     std::vector<std::pair<uint64_t, uint64_t>>
     all_P_in_range(bwt_interval &I)
     {
         return BWT_P.values_in_range(I.left(), I.right(), max_P);
     }
+
+    //! TODO:
+    /*!
+    * \returns std::vector<std::pair<uint64_t, uint64_t>>
+    */
     std::vector<std::pair<uint64_t, uint64_t>>
     all_O_in_range(bwt_interval &I)
     {
@@ -856,32 +865,38 @@ public:
         return I.get_cur_value() != I.end();
     }
     */
-    //! Calculates gao for a specific BWT.
+    //! Gets the number of distinct valuesfor a specific BWT.
     /*!
     * \author Fabrizio Barisione
+    * \param l : left value of the range.
+    * \param r : right value of the range.
     * \returns uint64_t
     */
-    uint64_t calculate_gao_BWT_S(uint64_t l, uint64_t r)
+    uint64_t get_number_distinct_values_BWT_S(uint64_t l, uint64_t r)
     {
-        return BWT_S.calculate_gao(l, r);
+        return BWT_S.get_number_distinct_values(l, r);
     }
-    //! Calculates gao for a specific BWT.
+    //! Gets the number of distinct valuesfor a specific BWT.
     /*!
     * \author Fabrizio Barisione
+    * \param l : left value of the range.
+    * \param r : right value of the range.
     * \returns uint64_t
     */
-    uint64_t calculate_gao_BWT_P(uint64_t l, uint64_t r)
+    uint64_t get_number_distinct_values_BWT_P(uint64_t l, uint64_t r)
     {
-        return BWT_P.calculate_gao(l, r);
+        return BWT_P.get_number_distinct_values(l, r);
     }
-    //! Calculates gao for a specific BWT.
+    //! Gets the number of distinct valuesfor a specific BWT.
     /*!
     * \author Fabrizio Barisione
+    * \param l : left value of the range.
+    * \param r : right value of the range.
     * \returns uint64_t
     */
-    uint64_t calculate_gao_BWT_O(uint64_t l, uint64_t r)
+    uint64_t get_number_distinct_values_BWT_O(uint64_t l, uint64_t r)
     {
-        return BWT_O.calculate_gao(l, r);
+        return BWT_O.get_number_distinct_values(l, r);
     }
     //! Gets the number of triples.
     /*!
@@ -896,7 +911,7 @@ public:
     // It is a functional but not elegant solution that could be improved.
     /*!
     * \author Fabrizio Barisione
-    * \returns uint64_t
+    * \returns double
     */
     double get_crc_wm_total_build_time_span() const
     {
@@ -910,7 +925,7 @@ public:
     // It is a functional but not elegant solution that could be improved.
     /*!
     * \author Fabrizio Barisione
-    * \returns uint64_t
+    * \returns double
     */
     double get_range_search_total_time_span() const
     {
@@ -925,7 +940,6 @@ public:
     // It is a functional but not elegant solution that could be improved.
     /*!
     * \author Fabrizio Barisione
-    * \returns uint64_t
     */
     void clear_crc_wm_build_time_span()
     {
@@ -933,6 +947,10 @@ public:
         BWT_P.clear_times();
         BWT_O.clear_times();
     }
+    //! TODO:
+    /*!
+    * \returns std::vector<uint64_t>
+    */
     std::vector<uint64_t> get_P_given_S(uint64_t symbolId){
         std::vector<u_int64_t> results;
         //auto num_elems = BWT_P.nElems(symbolId);
@@ -944,6 +962,10 @@ public:
         }
         return results;
     }
+    //! TODO:
+    /*!
+    * \returns std::vector<uint64_t>
+    */
     std::vector<uint64_t> get_O_given_P(uint64_t symbolId){
         std::vector<u_int64_t> results;
         bwt_interval aux_i = bwt_interval(BWT_O.get_C(symbolId) , BWT_O.get_C(symbolId + 1) -1);

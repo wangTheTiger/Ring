@@ -17,6 +17,7 @@
 #include <utility>
 #include <map>
 #include "ring_spo.hpp"
+#include "ring_sop.hpp"
 #include <chrono>
 #include "Term.h"
 #include "Triple.h"
@@ -102,93 +103,6 @@ Triple* get_triple(string & s, vector<Term*> & terms_created) {
     return new Triple(t1, t2, t3);
 }
 
-vector<string> get_gao(vector<Triple*> query) {
-    map<string, int> varnums;
-    for (Triple * triple_pattern : query) {
-        if (triple_pattern->s->isVariable) {
-            if (varnums.count(triple_pattern->s->varname) == 0) {
-                varnums[triple_pattern->s->varname] = 1;
-            }
-            else {
-                varnums[triple_pattern->s->varname] += 1;
-            }
-        }
-        if (triple_pattern->p->isVariable) {
-            if (varnums.count(triple_pattern->p->varname) == 0) {
-                varnums[triple_pattern->p->varname] = 1;
-            }
-            else {
-                varnums[triple_pattern->p->varname] += 1;
-            }
-        }
-        if (triple_pattern->o->isVariable) {
-            if (varnums.count(triple_pattern->o->varname) == 0) {
-                varnums[triple_pattern->o->varname] = 1;
-            }
-            else {
-                varnums[triple_pattern->o->varname] += 1;
-            }
-        }
-    }
-
-    vector<pair<string, int>> varnums_pairs;
-    for(auto it = (varnums).cbegin(); it != (varnums).cend(); ++it) {
-        varnums_pairs.push_back(pair<string, int>(it->first, varnums[it->first]));
-    }
-
-    sort((varnums_pairs).rbegin(), (varnums_pairs).rend(), compare_by_second);
-
-    vector<string> gao;
-
-    for (pair<string, int> my_pair : varnums_pairs) {
-        gao.push_back(my_pair.first);
-    }
-
-    return gao;
-
-}
-
-vector<string> get_gao_min(vector<Triple*> query, ring_spo & graph) {
-    map<string, vector<float>> triple_values;
-    for (Triple * triple_pattern : query) {
-
-        bwt_interval open_interval = graph.open_PSO();
-        uint64_t cur_p = graph.min_P(open_interval);
-        cur_p = graph.next_P(open_interval, triple_pattern->p->constant);
-
-        bwt_interval i_p = graph.down_P(cur_p);
-
-        triple_values[triple_pattern->s->varname].push_back((float)i_p.size()/query.size());
-        triple_values[triple_pattern->o->varname].push_back((float)i_p.size()/query.size());
-    }
-
-    vector<pair<string, float>> varmin_pairs;
-    vector<string> single_vars;
-    for(auto it = (triple_values).cbegin(); it != (triple_values).cend(); ++it) {
-        if (triple_values[it->first].size() == 1) {
-            single_vars.push_back(it->first);
-        } else {
-            varmin_pairs.push_back(pair<string, float>(it->first, *min_element(triple_values[it->first].begin(), triple_values[it->first].end())));
-        }
-    }
-
-
-    sort((varmin_pairs).begin(), (varmin_pairs).end(), compare_by_second);
-
-    vector<string> gao;
-
-    for (pair<string, int> my_pair : varmin_pairs) {
-        gao.push_back(my_pair.first);
-    }
-
-    for (string s : single_vars) {
-        gao.push_back(s);
-    }
-
-    return gao;
-
-}
-
 void set_scores(vector<Triple*>& query, vector<string>& gao) {
     for (Triple* triple_pattern : query) {
         triple_pattern->set_scores(gao);
@@ -199,24 +113,26 @@ int main(int argc, char* argv[])
 {
     vector<string> dummy_queries;
     bool result = get_file_content(argv[2], dummy_queries);
+    ring_spo graph_spo;
+    cout << " Loading the spo index..."; fflush(stdout);
+    graph_spo.load(string(argv[1]));
 
-    ring_spo graph;
+    cout << endl << " spo index loaded " << graph_spo.size() << " bytes" << endl;
 
-    cout << " Loading the index..."; fflush(stdout);
-    graph.load(string(argv[1]));
+    ring_sop graph_sop;
+    cout << " Loading the sop index..."; fflush(stdout);
+    graph_sop.load(string(argv[1])+"_sop");
 
-    cout << endl << " Index loaded " << graph.size() << " bytes" << endl;
+    cout << endl << " sop index loaded " << graph_sop.size() << " bytes" << endl;
 
     std::ifstream ifs;
     uint64_t nQ = 0;
 
-    high_resolution_clock::time_point start, stop;
+    std::chrono::high_resolution_clock::time_point start, stop;
     double total_time = 0.0;
-    //duration<double> time_span;
 
     if(result)
     {
-
         int count = 1;
         for (string query_string : dummy_queries) {
 
@@ -232,17 +148,12 @@ int main(int argc, char* argv[])
                 query.push_back(triple_pattern);
             }
 
-            // vector<string> gao = get_gao(query);
-            // vector<string> gao = get_gao_min_opt(query, graph);
-            // cout << gao [0] << " - " << gao [1] << " - " << gao[2] << endl;
+            start = std::chrono::high_resolution_clock::now();// try with std::chrono::steady_clock
 
-            start = high_resolution_clock::now();
-
-            vector<string> gao = get_gao_min_gen(query, graph);
+            vector<string> gao = get_gao(query, graph_spo, graph_sop);
             set_scores(query, gao);
 
-            LeapfrogOP lf(&gao, &graph, &query);
-
+            LeapfrogOP lf(&gao, &graph_spo, &query);
             /*
             cout << "Query Details:" << endl;
             lf.print_query();
@@ -250,18 +161,21 @@ int main(int argc, char* argv[])
             lf.serialize();
             cout << "##########" << endl;
             */
-
             map<string, uint64_t> bindings;
             int number_of_results = 0;
 
             std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
             lf.evaluate(0, &bindings, &number_of_results, begin);
-            //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+            //std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    
+            stop = std::chrono::high_resolution_clock::now();
+            total_time = duration_cast<microseconds>(stop - start).count();
+            const double crc_total_time = graph_spo.get_crc_wm_total_build_time_span();
+            const double range_search_total_time = graph_spo.get_range_search_total_time_span();
+            graph_spo.clear_crc_wm_build_time_span();
+            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << ";" << (unsigned long long)(crc_total_time*1000000000ULL) << ";" << (unsigned long long)(range_search_total_time*1000000000ULL)  << endl;
 
-            stop = high_resolution_clock::now();
-            //time_span = duration_cast<microseconds>(stop - start);
-            auto total_time = duration_cast<microseconds>(stop - start).count();
-            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << endl;
+            //cout << nQ <<  ";" << number_of_results << ";" << total_time << ";" << aux << ";" << total_time - aux << endl;
             nQ++;
 
             // cout << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << std::endl;
