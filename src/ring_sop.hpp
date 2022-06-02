@@ -867,7 +867,6 @@ public:
     */
     //! Gets the number of distinct valuesfor a specific BWT.
     /*!
-    * \author Fabrizio Barisione
     * \param l : left value of the range.
     * \param r : right value of the range.
     * \returns uint64_t
@@ -878,7 +877,6 @@ public:
     }
     //! Gets the number of distinct valuesfor a specific BWT.
     /*!
-    * \author Fabrizio Barisione
     * \param l : left value of the range.
     * \param r : right value of the range.
     * \returns uint64_t
@@ -889,7 +887,6 @@ public:
     }
     //! Gets the number of distinct valuesfor a specific BWT.
     /*!
-    * \author Fabrizio Barisione
     * \param l : left value of the range.
     * \param r : right value of the range.
     * \returns uint64_t
@@ -900,7 +897,6 @@ public:
     }
     //! Gets the number of triples.
     /*!
-    * \author Fabrizio Barisione
     * \returns uint64_t
     */
     uint64_t get_n_triples() const
@@ -910,7 +906,6 @@ public:
     //! Get the total build time of the CRC WM construction.
     // It is a functional but not elegant solution that could be improved.
     /*!
-    * \author Fabrizio Barisione
     * \returns double
     */
     double get_crc_wm_total_build_time_span() const
@@ -924,7 +919,6 @@ public:
     //! Get the total build time of the range search.
     // It is a functional but not elegant solution that could be improved.
     /*!
-    * \author Fabrizio Barisione
     * \returns double
     */
     double get_range_search_total_time_span() const
@@ -939,7 +933,6 @@ public:
     //! Clears the 'crc_wm_build_time_span' member of each BWT.
     // It is a functional but not elegant solution that could be improved.
     /*!
-    * \author Fabrizio Barisione
     */
     void clear_crc_wm_build_time_span()
     {

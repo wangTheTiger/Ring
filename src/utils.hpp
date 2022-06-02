@@ -10,7 +10,6 @@
 
 //! TODO:
 /*!
- * \author Fabrizio Barisione
  * \returns TODO:
  */
 std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern, ring_spo &graph_spo, ring_sop &graph_sop)
@@ -186,7 +185,6 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b)
 
 //! TODO:
 /*!
- * \author Fabrizio Barisione
  * \param vector<Triple*> : the Basic graph pattern (query)
  * \param ring_spo&  : The Ring succinct structure
  * \param ring_sop&  : The reverse Ring.
