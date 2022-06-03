@@ -29,19 +29,14 @@ private:
     bwt_type L;
     bwt_type crc_L;
     bool build_crc_wm(uint64_t x_s, uint64_t x_e);
-    uint64_t num_dist_values;
-    double total_crc_wm_build_time_span = 0.0;
-    double total_range_search_time_span = 0.0;
 
 public:
+    crc() = default;
     crc(bwt_type &wm_l);
     void load(string filename);
     void save(string filename);
     uint64_t get_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, uint64_t rng_s, uint64_t rng_e);
     uint64_t get_number_distinct_values(uint64_t l, uint64_t r);
-    double get_crc_wm_build_time_span() const;
-    double get_range_search_time_span() const;
-    void clear_times();
 };
 
 void crc::save(string filename)
@@ -135,47 +130,17 @@ uint64_t crc::get_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, ui
 uint64_t crc::get_number_distinct_values(uint64_t l, uint64_t r)
 {
     // std::cout << "Calling get_number_distinct_values with range : [" << l << ", " << r << "]." << std::endl;
-    num_dist_values = 0;
-    std::chrono::high_resolution_clock::time_point start, stop; // try with std:.chrono::steady_clock
-    start = std::chrono::high_resolution_clock::now();
+    uint64_t num_dist_values = 0;
     // Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
     //bool result = build_crc_wm(l, r);
-    bool result = true; //TODO: FIX ME
-    stop = std::chrono::high_resolution_clock::now();
-    auto total_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-    total_crc_wm_build_time_span += total_time;
-    if (result)
-    {
-        uint64_t rng_s = 0;
-        uint64_t rng_e = (r - 1) < 0 ? 0 : r - 1;
+    uint64_t rng_s = 0;
+    uint64_t rng_e = (r - 1) < 0 ? 0 : r - 1;
 
-        start = std::chrono::high_resolution_clock::now();
+    // Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
+    // num_dist_values = get_number_distinct_values_on_range(r, l, rng_s, rng_e);
+    num_dist_values = get_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
 
-        // Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
-        // num_dist_values = get_number_distinct_values_on_range(r, l, rng_s, rng_e);
-        num_dist_values = get_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
-
-        stop = std::chrono::high_resolution_clock::now();
-        auto total_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-        total_range_search_time_span += total_time;
-    }
     // std::cout << "Num of distinct values : " << num_dist_values << std::endl;
     return num_dist_values;
-}
-
-double crc::get_crc_wm_build_time_span() const
-{
-    return total_crc_wm_build_time_span;
-}
-
-double crc::get_range_search_time_span() const
-{
-    return total_range_search_time_span;
-}
-
-void crc::clear_times()
-{
-    total_crc_wm_build_time_span = 0.0;
-    total_range_search_time_span = 0.0;
 }
 #endif

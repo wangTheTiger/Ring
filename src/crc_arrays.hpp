@@ -40,7 +40,6 @@ private:
     unique_ptr<crc> sop_BWT_O;
 
 public:
-    crc_arrays() = default;
     void build_spo_arrays(ring_spo &spo)
     {
         r_spo = spo;
@@ -69,6 +68,14 @@ public:
     }
     void load(string filename)
     {
+        spo_BWT_S = std::make_unique<crc>();//TODO: maybe move this to the default constructor.
+        spo_BWT_P = std::make_unique<crc>();
+        spo_BWT_O = std::make_unique<crc>();
+
+        sop_BWT_S = std::make_unique<crc>();
+        sop_BWT_P = std::make_unique<crc>();
+        sop_BWT_O = std::make_unique<crc>();
+
         spo_BWT_S->load(filename + "_spo_crc_S");
         spo_BWT_P->load(filename + "_spo_crc_P");
         spo_BWT_O->load(filename + "_spo_crc_O");
@@ -136,51 +143,6 @@ public:
     uint64_t get_number_distinct_values_sop_BWT_O(uint64_t l, uint64_t r)
     {
         return sop_BWT_O->get_number_distinct_values(l, r);
-    }
-    //! Get the total build time of the CRC WM construction.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-     * \returns double
-     */
-    double get_crc_wm_total_build_time_span() const
-    {
-        // TODO: fix me
-        /*
-        double bwt_s = BWT_S.get_crc_wm_build_time_span();
-        double bwt_p = BWT_P.get_crc_wm_build_time_span();
-        double bwt_o = BWT_O.get_crc_wm_build_time_span();
-        return  bwt_s + bwt_p + bwt_o;*/
-        return 0.0;
-    }
-
-    //! Get the total build time of the range search.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-     * \returns double
-     */
-    double get_range_search_total_time_span() const
-    {
-        // TODO: fix me
-        /*
-        double bwt_s = BWT_S.get_range_search_time_span();
-        double bwt_p = BWT_P.get_range_search_time_span();
-        double bwt_o = BWT_O.get_range_search_time_span();
-        return  bwt_s + bwt_p + bwt_o;*/
-        return 0.0;
-    }
-
-    //! Clears the 'crc_wm_build_time_span' member of each BWT.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-     */
-    void clear_crc_wm_build_time_span()
-    {
-        // TODO: fix me
-        /*
-        BWT_S.clear_times();
-        BWT_P.clear_times();
-        BWT_O.clear_times();
-        */
     }
 };
 

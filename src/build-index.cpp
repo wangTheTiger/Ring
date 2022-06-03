@@ -10,7 +10,6 @@ using timer = std::chrono::high_resolution_clock;
 
 int main(int argc, char **argv)
 {
-    crc_arrays crc_arrays;
     vector<spo_triple> D;
     //1. Read the source file.
     std::ifstream ifs(argv[1]);
@@ -24,6 +23,7 @@ int main(int argc, char **argv)
 
     //2. Building the Index SPO - OSP - POS (Cyclic)
     {
+        crc_arrays crc_arrays;
         cout << " Building the SPO Index " << endl;
         cout << "--Indexing " << D.size() << " triples" << endl;
         memory_monitor::start();
@@ -54,6 +54,7 @@ int main(int argc, char **argv)
     }
     //3. Building the reverse Index SOP - PSO - OPS (Cyclic)
     {
+        crc_arrays crc_arrays;
         cout << " Building the SPO reverse Index " << endl;
         cout << "--Indexing " << D.size() << " triples" << endl;
         memory_monitor::start();

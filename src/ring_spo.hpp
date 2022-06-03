@@ -864,7 +864,7 @@ public:
         auto current_p = min_P_in_S(aux_i, symbolId);
         uint64_t old_p = 0;
         results.push_back(current_p);
-        for(int q=0; q < num_elems; q++){
+        for(uint64_t q=0; q < num_elems; q++){
             current_p = next_P_in_S(aux_i, symbolId, ++current_p);
             if(current_p <= old_p){
                 break;
@@ -888,7 +888,7 @@ public:
         auto current_p = min_S_in_O(aux_i, symbolId);
         uint64_t old_p = 0;
         results.push_back(current_p);
-        for(int q=0; q < num_elems; q++){
+        for(uint64_t q=0; q < num_elems; q++){
             current_p = next_S_in_O(aux_i, symbolId, ++current_p);
             if(current_p <= old_p){
                 break;
@@ -911,7 +911,7 @@ public:
         auto current_p = min_O_in_P(aux_i, symbolId);
         uint64_t old_p = 0;
         results.push_back(current_p);
-        for(int q=0; q < num_elems; q++){
+        for(uint64_t q=0; q < num_elems; q++){
             current_p = next_O_in_P(aux_i, symbolId, ++current_p);
             if(current_p <= old_p){
                 break;

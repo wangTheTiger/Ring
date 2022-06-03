@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
             std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
             lf.evaluate(0, &bindings, &number_of_results, begin);
             //std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    
+
             stop = std::chrono::high_resolution_clock::now();
             total_time = duration_cast<microseconds>(stop - start).count();
             //TODO: const double crc_total_time = graph_spo.get_crc_wm_total_build_time_span();
