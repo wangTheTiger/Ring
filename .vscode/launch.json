@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/build-index",
-            "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated-reduced.dat"],
+            "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated.dat"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

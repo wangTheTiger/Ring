@@ -1,15 +1,16 @@
 #include <iostream>
 #include "ring_spo.hpp"
 #include "ring_sop.hpp"
+#include "crc_arrays.hpp"
 #include <fstream>
 #include <sdsl/construct.hpp>
 
 using namespace std::chrono;
 using timer = std::chrono::high_resolution_clock;
 
-
 int main(int argc, char **argv)
 {
+    crc_arrays crc_arrays;
     vector<spo_triple> D;
     //1. Read the source file.
     std::ifstream ifs(argv[1]);
@@ -36,6 +37,9 @@ int main(int argc, char **argv)
         ring_spo.save(string(argv[1]));
         cout << "Index saved" << endl;
 
+        cout << "Building & saving crc arrays" << std::endl;
+        crc_arrays.build_spo_arrays(ring_spo);
+        crc_arrays.save_spo(string(argv[1]));
         cout << duration_cast<seconds>(stop-start).count() << " seconds." << endl;
         cout << memory_monitor::peak() << " bytes." << endl;
     }
@@ -61,9 +65,12 @@ int main(int argc, char **argv)
         memory_monitor::stop();
         cout << "  Index built " << ring_sop.size() << " bytes" << endl;
 
-        ring_sop.save(string(argv[1]) + "_sop");
-        cout << "Index saved" << endl;
+        //ring_sop.save(string(argv[1]) + "_sop");
+        //cout << "Index saved" << endl;
 
+        cout << "Building & saving crc arrays" << std::endl;
+        crc_arrays.build_sop_arrays(ring_sop);
+        crc_arrays.save_sop(string(argv[1]));
         cout << duration_cast<seconds>(stop-start).count() << " seconds." << endl;
         cout << memory_monitor::peak() << " bytes." << endl;
     }

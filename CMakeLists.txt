@@ -3,14 +3,14 @@ cmake_minimum_required(VERSION 3.0.0)
 
 #> Variables 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_COMPILER "g++")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -O0 -g3 \
 -lsdsl -ldivsufsort -ldivsufsort64")
 #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 -g0 -pthread \
 #-lsdsl -ldivsufsort -ldivsufsort64")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O9 -std=c++11 -DNODEBUG \
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O9 -std=c++14 -DNODEBUG \
 -lsdsl -ldivsufsort -ldivsufsort64")
 #< Variables 
 

@@ -41,6 +41,7 @@ class ring_spo
     uint64_t sigma_P;
     uint64_t sigma_O;
 
+    friend class crc_arrays;
 public:
     ring_spo() { ; }
 
@@ -843,36 +844,6 @@ public:
         return I.get_cur_value() != I.end();
     }
 
-    //! Gets the number of distinct valuesfor a specific BWT.
-    /*!
-    * \param l : left value of the range.
-    * \param r : right value of the range.
-    * \returns uint64_t
-    */
-    uint64_t get_number_distinct_values_BWT_S(uint64_t l, uint64_t r)
-    {
-        return BWT_S.get_number_distinct_values(l, r);
-    }
-    //! Gets the number of distinct valuesfor a specific BWT.
-    /*!
-    * \param l : left value of the range.
-    * \param r : right value of the range.
-    * \returns uint64_t
-    */
-    uint64_t get_number_distinct_values_BWT_P(uint64_t l, uint64_t r)
-    {
-        return BWT_P.get_number_distinct_values(l, r);
-    }
-    //! Gets the number of distinct valuesfor a specific BWT.
-    /*!
-    * \param l : left value of the range.
-    * \param r : right value of the range.
-    * \returns uint64_t
-    */
-    uint64_t get_number_distinct_values_BWT_O(uint64_t l, uint64_t r)
-    {
-        return BWT_O.get_number_distinct_values(l, r);
-    }
     //! Gets the number of triples.
     /*!
     * \returns uint64_t
@@ -880,43 +851,6 @@ public:
     uint64_t get_n_triples() const
     {
         return nTriples;
-    }
-    //! Get the total build time of the CRC WM construction.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-    * \returns double
-    */
-    double get_crc_wm_total_build_time_span() const
-    {
-        double bwt_s = BWT_S.get_crc_wm_build_time_span();
-        double bwt_p = BWT_P.get_crc_wm_build_time_span();
-        double bwt_o = BWT_O.get_crc_wm_build_time_span();
-        return  bwt_s + bwt_p + bwt_o;
-    }
-
-    //! Get the total build time of the range search.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-    * \returns double
-    */
-    double get_range_search_total_time_span() const
-    {
-        double bwt_s = BWT_S.get_range_search_time_span();
-        double bwt_p = BWT_P.get_range_search_time_span();
-        double bwt_o = BWT_O.get_range_search_time_span();
-        return  bwt_s + bwt_p + bwt_o;
-    }
-
-    
-    //! Clears the 'crc_wm_build_time_span' member of each BWT.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-    */
-    void clear_crc_wm_build_time_span()
-    {
-        BWT_S.clear_times();
-        BWT_P.clear_times();
-        BWT_O.clear_times();
     }
     //! TODO:
     /*!
@@ -955,7 +889,7 @@ public:
         uint64_t old_p = 0;
         results.push_back(current_p);
         for(int q=0; q < num_elems; q++){
-            current_p = next_S_in_O(aux_i, symbolId, ++current_p); 
+            current_p = next_S_in_O(aux_i, symbolId, ++current_p);
             if(current_p <= old_p){
                 break;
             }

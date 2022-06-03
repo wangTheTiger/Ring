@@ -118,12 +118,14 @@ int main(int argc, char* argv[])
     graph_spo.load(string(argv[1]));
 
     cout << endl << " spo index loaded " << graph_spo.size() << " bytes" << endl;
-
+    /*
     ring_sop graph_sop;
     cout << " Loading the sop index..."; fflush(stdout);
     graph_sop.load(string(argv[1])+"_sop");
-
-    cout << endl << " sop index loaded " << graph_sop.size() << " bytes" << endl;
+    */
+    crc_arrays crc_arrays;
+    crc_arrays.load(string(argv[1]));
+    cout << endl << " CRC arrays loaded " << endl;
 
     std::ifstream ifs;
     uint64_t nQ = 0;
@@ -150,7 +152,7 @@ int main(int argc, char* argv[])
 
             start = std::chrono::high_resolution_clock::now();// try with std::chrono::steady_clock
 
-            vector<string> gao = get_gao(query, graph_spo, graph_sop);
+            vector<string> gao = get_gao(query, graph_spo, crc_arrays);
             set_scores(query, gao);
 
             LeapfrogOP lf(&gao, &graph_spo, &query);
@@ -170,10 +172,10 @@ int main(int argc, char* argv[])
     
             stop = std::chrono::high_resolution_clock::now();
             total_time = duration_cast<microseconds>(stop - start).count();
-            const double crc_total_time = graph_spo.get_crc_wm_total_build_time_span();
-            const double range_search_total_time = graph_spo.get_range_search_total_time_span();
-            graph_spo.clear_crc_wm_build_time_span();
-            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << ";" << (unsigned long long)(crc_total_time*1000000000ULL) << ";" << (unsigned long long)(range_search_total_time*1000000000ULL)  << endl;
+            //TODO: const double crc_total_time = graph_spo.get_crc_wm_total_build_time_span();
+            //TODO: const double range_search_total_time = graph_spo.get_range_search_total_time_span();
+            //TODO: graph_spo.clear_crc_wm_build_time_span();
+            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << std::endl; //TODO: ";" << (unsigned long long)(crc_total_time*1000000000ULL) << ";" << (unsigned long long)(range_search_total_time*1000000000ULL)  << endl;
 
             //cout << nQ <<  ";" << number_of_results << ";" << total_time << ";" << aux << ";" << total_time - aux << endl;
             nQ++;

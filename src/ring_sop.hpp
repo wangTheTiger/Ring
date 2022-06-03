@@ -23,12 +23,13 @@
 #include <cstdint>
 #include "bwt.hpp"
 #include "bwt_interval.hpp"
-
+#include "crc_array.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 
 class ring_sop
 {
+private:
     bwt BWT_S;
     bwt BWT_O;
     bwt BWT_P;
@@ -40,7 +41,7 @@ class ring_sop
     uint64_t sigma_S;
     uint64_t sigma_P;
     uint64_t sigma_O;
-
+    friend class crc_arrays;
 public:
     ring_sop() { ; }
 
@@ -118,10 +119,10 @@ public:
             //std::cout << t << std::endl;
             //D.clear();
             //D.shrink_to_fit();
-            cout << "Size of D " << D.size() << " elements" << endl;
+            //cout << "Size of D " << D.size() << " elements" << endl;
             util::bit_compress(t);
-            cout << "Done" << endl; fflush(stdout);
-            cout << "t size " << size_in_bytes(t) << endl;
+            //cout << "Done" << endl; fflush(stdout);
+            //cout << "t size " << size_in_bytes(t) << endl;
             //int_vector<> bwt_aux(3*n);
 
             {
@@ -148,7 +149,7 @@ public:
         }
         //std::cout << "BWT: " << std::endl;
         //std::cout << bwt_aux << std::endl;
-        cout << "  > Building BWT_P" << endl; fflush(stdout);
+        //cout << "  > Building BWT_P" << endl; fflush(stdout);
         // First P
         {
             int_vector<> P(n + 1);
@@ -183,7 +184,7 @@ public:
             BWT_P = bwt(P, C_P);
         }
 
-        cout << "  > Building BWT_S" << endl; fflush(stdout);
+        //cout << "  > Building BWT_S" << endl; fflush(stdout);
         // Then S
         {
             int_vector<> S(n + 1);
@@ -213,7 +214,7 @@ public:
             BWT_S = bwt(S, C_S);
         }
 
-        cout << "  > Building BWT_O" << endl; fflush(stdout);
+        //cout << "  > Building BWT_O" << endl; fflush(stdout);
         // Then O
         {
             int_vector<> O(n + 1);
@@ -865,36 +866,6 @@ public:
         return I.get_cur_value() != I.end();
     }
     */
-    //! Gets the number of distinct valuesfor a specific BWT.
-    /*!
-    * \param l : left value of the range.
-    * \param r : right value of the range.
-    * \returns uint64_t
-    */
-    uint64_t get_number_distinct_values_BWT_S(uint64_t l, uint64_t r)
-    {
-        return BWT_S.get_number_distinct_values(l, r);
-    }
-    //! Gets the number of distinct valuesfor a specific BWT.
-    /*!
-    * \param l : left value of the range.
-    * \param r : right value of the range.
-    * \returns uint64_t
-    */
-    uint64_t get_number_distinct_values_BWT_P(uint64_t l, uint64_t r)
-    {
-        return BWT_P.get_number_distinct_values(l, r);
-    }
-    //! Gets the number of distinct valuesfor a specific BWT.
-    /*!
-    * \param l : left value of the range.
-    * \param r : right value of the range.
-    * \returns uint64_t
-    */
-    uint64_t get_number_distinct_values_BWT_O(uint64_t l, uint64_t r)
-    {
-        return BWT_O.get_number_distinct_values(l, r);
-    }
     //! Gets the number of triples.
     /*!
     * \returns uint64_t
@@ -902,43 +873,6 @@ public:
     uint64_t get_n_triples() const
     {
         return nTriples;
-    }
-    //! Get the total build time of the CRC WM construction.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-    * \returns double
-    */
-    double get_crc_wm_total_build_time_span() const
-    {
-        double bwt_s = BWT_S.get_crc_wm_build_time_span();
-        double bwt_p = BWT_P.get_crc_wm_build_time_span();
-        double bwt_o = BWT_O.get_crc_wm_build_time_span();
-        return  bwt_s + bwt_p + bwt_o;
-    }
-
-    //! Get the total build time of the range search.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-    * \returns double
-    */
-    double get_range_search_total_time_span() const
-    {
-        double bwt_s = BWT_S.get_range_search_time_span();
-        double bwt_p = BWT_P.get_range_search_time_span();
-        double bwt_o = BWT_O.get_range_search_time_span();
-        return  bwt_s + bwt_p + bwt_o;
-    }
-
-    
-    //! Clears the 'crc_wm_build_time_span' member of each BWT.
-    // It is a functional but not elegant solution that could be improved.
-    /*!
-    */
-    void clear_crc_wm_build_time_span()
-    {
-        BWT_S.clear_times();
-        BWT_P.clear_times();
-        BWT_O.clear_times();
     }
     //! TODO:
     /*!
