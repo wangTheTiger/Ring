@@ -25,8 +25,8 @@ find_package(Boost 1.58.0 REQUIRED) #Downgraded from 1.71.0
 include_directories(${Boost_INCLUDE_DIRS})
 
 #> SDSL Specifics
-include_directories(/home/fabrizio/include) #compiler
-link_directories(/home/fabrizio/lib) #linker
+include_directories(~/include) #compiler
+link_directories(~/lib) #linker
 #< SDSL Specific
 
 #Retrieve recursively all cpp files within 'src' https://cmake.org/cmake/help/latest/command/file.html#glob-recurse
