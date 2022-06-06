@@ -10,8 +10,7 @@ After the extended version of SDSL is installed, we have to clone this repositor
 
 1. First we have to build the code with cmake. in the root directory run:
 
-```cmake .
-cmake --build . --config Release --target all
+```cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build/
 ```
 
 2. Download the version of Wikidata that we want to use:

@@ -132,6 +132,7 @@ int main(int argc, char* argv[])
 
     std::chrono::high_resolution_clock::time_point start, stop;
     double total_time = 0.0;
+    duration<double> time_span;
 
     if(result)
     {
@@ -171,11 +172,11 @@ int main(int argc, char* argv[])
             //std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
             stop = std::chrono::high_resolution_clock::now();
-            total_time = duration_cast<microseconds>(stop - start).count();
-            //TODO: const double crc_total_time = graph_spo.get_crc_wm_total_build_time_span();
-            //TODO: const double range_search_total_time = graph_spo.get_range_search_total_time_span();
-            //TODO: graph_spo.clear_crc_wm_build_time_span();
-            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << std::endl; //TODO: ";" << (unsigned long long)(crc_total_time*1000000000ULL) << ";" << (unsigned long long)(range_search_total_time*1000000000ULL)  << endl;
+            //total_time = duration_cast<microseconds>(stop - start).count();
+            time_span = duration_cast<microseconds>(stop - start);
+            total_time = time_span.count();
+
+            cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << std::endl;
 
             //cout << nQ <<  ";" << number_of_results << ";" << total_time << ";" << aux << ";" << total_time - aux << endl;
             nQ++;

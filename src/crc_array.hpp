@@ -134,11 +134,10 @@ uint64_t crc::get_number_distinct_values(uint64_t l, uint64_t r)
     // Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
     //bool result = build_crc_wm(l, r);
     uint64_t rng_s = 0;
-    uint64_t rng_e = (r - 1) < 0 ? 0 : r - 1;
+    uint64_t rng_e = (r == 0) ? 0 : r - 1;
 
-    // Up to this line we have built the CRC WM based on L. Then we need to calculate the distinct # of values on the whole matrix.
-    // num_dist_values = get_number_distinct_values_on_range(r, l, rng_s, rng_e);
-    num_dist_values = get_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
+    num_dist_values = get_number_distinct_values_on_range(r, l, rng_s, rng_e);
+    //num_dist_values = get_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
 
     // std::cout << "Num of distinct values : " << num_dist_values << std::endl;
     return num_dist_values;

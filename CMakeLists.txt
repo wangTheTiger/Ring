@@ -19,7 +19,7 @@ project(Ring VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-find_package(Boost 1.71.0 REQUIRED)
+find_package(Boost 1.58.0 REQUIRED) #Downgraded from 1.71.0
 #If the above library is found, then several result variables are set, such as Boost_INCLUDE_DIRS. 
 #I.e. :https://cmake.org/cmake/help/latest/module/FindBoost.html
 include_directories(${Boost_INCLUDE_DIRS})
