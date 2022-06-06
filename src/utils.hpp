@@ -231,6 +231,7 @@ vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &
             auto var_aux = hash_map.find(triple_pattern->p->varname);
             if(var_aux != hash_map.end()){
                 auto var_weight = var_aux->second;
+                triple_values[triple_pattern->p->varname].push_back(var_weight);
                 triples_var[triple_pattern->p->varname].push_back(triple_pattern);
             }
         }
