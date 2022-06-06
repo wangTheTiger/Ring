@@ -30,7 +30,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/query-index",
             "args": ["/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/dat/wikidata-filtered-enumerated.dat",
-                    "/home/fabrizio/dcc_uchile/git_projects/Ring_intro_a_tesis/Queries/Queries-wikidata-benchmark.txt"],
+                    "/home/fabrizio/dcc_uchile/git_projects/Ring/Queries/Queries_with_error.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

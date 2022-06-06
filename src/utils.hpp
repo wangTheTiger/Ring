@@ -22,7 +22,10 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
     if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable)
     {
         bwt_interval open_interval = graph_spo.open_SPO();
-        //return open_interval.size(); // TODO: do something different here.
+        // TODO: do something different here.
+        hash_map.insert({triple_pattern->s->varname, open_interval.size()});
+        hash_map.insert({triple_pattern->p->varname, open_interval.size()});
+        hash_map.insert({triple_pattern->o->varname, open_interval.size()});
         return hash_map;
     }
     //Second case : ?S P ?O
@@ -36,6 +39,8 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
         cur_p = graph_spo.next_P(open_interval, triple_pattern->p->constant);
         if (cur_p == 0 || cur_p != triple_pattern->p->constant)
         {
+            hash_map.insert({triple_pattern->s->varname, 0});
+            hash_map.insert({triple_pattern->o->varname, 0});
             return hash_map;//return 0
         }
         else
@@ -61,6 +66,8 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
         cur_o = graph_spo.next_O(open_interval, triple_pattern->o->constant);
         if (cur_o == 0 || cur_o != triple_pattern->o->constant)
         {
+            hash_map.insert({triple_pattern->p->varname, 0});
+            hash_map.insert({triple_pattern->s->varname, 0});
             return hash_map;//return 0;
         }
         else
@@ -84,6 +91,8 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
         cur_s = graph_spo.next_S(open_interval, triple_pattern->s->constant);
         if (cur_s == 0 || cur_s != triple_pattern->s->constant)
         {
+            hash_map.insert({triple_pattern->o->varname, 0});
+            hash_map.insert({triple_pattern->p->varname, 0});
             return hash_map;//return 0;
         }
         else
@@ -107,6 +116,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
         cur_s = graph_spo.next_S(open_interval, triple_pattern->s->constant);
         if (cur_s == 0 || cur_s != triple_pattern->s->constant)
         {
+            hash_map.insert({triple_pattern->o->varname, 0});
             return hash_map;//return 0;
         }
         else
@@ -116,6 +126,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             cur_p = graph_spo.next_P_in_S(i_s, cur_s, triple_pattern->p->constant);
             if (cur_p == 0 || cur_p != triple_pattern->p->constant)
             {
+                hash_map.insert({triple_pattern->o->varname, 0});
                 return hash_map;//return 0;
             }
             bwt_interval i_p = graph_spo.down_S_P(i_s, cur_s, cur_p);
@@ -133,6 +144,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
         cur_s = graph_spo.next_S(open_interval, triple_pattern->s->constant);
         if (cur_s == 0 || cur_s != triple_pattern->s->constant)
         {
+            hash_map.insert({triple_pattern->p->varname, 0});
             return hash_map;//return 0;
         }
         else
@@ -142,6 +154,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             cur_o = graph_spo.next_O_in_S(i_s, triple_pattern->o->constant);
             if (cur_o == 0 || cur_o != triple_pattern->o->constant)
             {
+                hash_map.insert({triple_pattern->p->varname, 0});
                 return hash_map;//return 0;
             }
             bwt_interval i_o = graph_spo.down_S_O(i_s, cur_o);
@@ -159,6 +172,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
         cur_p = graph_spo.next_P(open_interval, triple_pattern->p->constant);
         if (cur_p == 0 || cur_p != triple_pattern->p->constant)
         {
+            hash_map.insert({triple_pattern->s->varname, 0});
             return hash_map;//return 0;
         }
         else
@@ -168,6 +182,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             cur_o = graph_spo.next_O_in_P(i_p, cur_p, triple_pattern->o->constant);
             if (cur_o == 0 || cur_o != triple_pattern->o->constant)
             {
+                hash_map.insert({triple_pattern->s->varname, 0});
                 return hash_map;//return 0;
             }
             bwt_interval i_o = graph_spo.down_P_O(i_p, cur_p, cur_o);
