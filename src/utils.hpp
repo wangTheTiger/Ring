@@ -185,9 +185,9 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
                 hash_map.insert({triple_pattern->s->varname, 0});
                 return hash_map;//return 0;
             }
-            bwt_interval i_o = graph_spo.down_P_O(i_p, cur_p, cur_o);
-            // Ring => Going from O to S: values must be shifted to the left, by subtracting 2 * nTriples. Remember O is between 2 * nTriples + 1 and 3 * nTriples.
-            uint64_t num_distinct_values_s = crc_arrays.get_number_distinct_values_spo_BWT_S(i_o.left() - 2 * nTriples, i_o.right() - 2 * nTriples);
+            i_p = graph_spo.down_P_O(i_p, cur_p, cur_o);
+            // Ring => Going from P to S: values must be shifted to the left, by subtracting nTriples. Remember P is between nTriples + 1 and 2 * nTriples.
+            uint64_t num_distinct_values_s = crc_arrays.get_number_distinct_values_spo_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples);
             hash_map.insert({triple_pattern->s->varname, num_distinct_values_s});
             return hash_map;
         }
