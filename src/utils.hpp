@@ -9,6 +9,92 @@
 #include <unordered_map>
 #include "crc_arrays.hpp"
 
+uint64_t get_size_interval(Triple * triple_pattern, ring_spo & graph) {
+    if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
+        bwt_interval open_interval = graph.open_SPO();
+        return open_interval.size();
+    } else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
+        bwt_interval open_interval = graph.open_PSO();
+        uint64_t cur_p = graph.min_P(open_interval);
+        cur_p = graph.next_P(open_interval, triple_pattern->p->constant);
+        if (cur_p == 0 || cur_p != triple_pattern->p->constant) {
+            return 0;
+        } else{
+            bwt_interval i_p = graph.down_P(cur_p);
+            return i_p.size();
+        }
+    } else if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable) {
+        bwt_interval open_interval = graph.open_OSP();
+        uint64_t cur_o = graph.min_O(open_interval);
+        cur_o = graph.next_O(open_interval, triple_pattern->o->constant);
+        if (cur_o == 0 || cur_o != triple_pattern->o->constant) {
+            return 0;
+        } else{
+            bwt_interval i_s = graph.down_O(cur_o);
+            return i_s.size();
+        }
+    } else if (!triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
+        bwt_interval open_interval = graph.open_SPO();
+        uint64_t cur_s = graph.min_S(open_interval);
+        cur_s = graph.next_S(open_interval, triple_pattern->s->constant);
+        if (cur_s == 0 || cur_s != triple_pattern->s->constant) {
+            return 0;
+        } else{
+            bwt_interval i_s = graph.down_S(cur_s);
+            return i_s.size();
+        }
+    } else if (!triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable) {
+        bwt_interval open_interval = graph.open_SPO();
+        uint64_t cur_s = graph.min_S(open_interval);
+        cur_s = graph.next_S(open_interval, triple_pattern->s->constant);
+        if (cur_s == 0 || cur_s != triple_pattern->s->constant) {
+            return 0;
+        } else{
+            bwt_interval i_s = graph.down_S(cur_s);
+            uint64_t cur_p = graph.min_P_in_S(i_s, cur_s);
+            cur_p = graph.next_P_in_S(i_s, cur_s, triple_pattern->p->constant);
+            if (cur_p == 0 || cur_p != triple_pattern->p->constant) {
+              return 0;
+            }
+            bwt_interval i_p = graph.down_S_P(i_s, cur_s, cur_p);
+            return i_p.size();
+        }
+    } else if (!triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable) {
+        bwt_interval open_interval = graph.open_SOP();
+        uint64_t cur_s = graph.min_S(open_interval);
+        cur_s = graph.next_S(open_interval, triple_pattern->s->constant);
+        if (cur_s == 0 || cur_s != triple_pattern->s->constant) {
+            return 0;
+        } else{
+            bwt_interval i_s = graph.down_S(cur_s);
+            uint64_t cur_o = graph.min_O_in_S(i_s);
+            cur_o = graph.next_O_in_S(i_s, triple_pattern->o->constant);
+            if (cur_o == 0 || cur_o != triple_pattern->o->constant) {
+              return 0;
+            }
+            bwt_interval i_o = graph.down_S_O(i_s, cur_o);
+            return i_o.size();
+        }
+    } else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && !triple_pattern->o->isVariable) {
+        bwt_interval open_interval = graph.open_POS();
+        uint64_t cur_p = graph.min_P(open_interval);
+        cur_p = graph.next_P(open_interval, triple_pattern->p->constant);
+        if (cur_p == 0 || cur_p != triple_pattern->p->constant) {
+            return 0;
+        } else{
+            bwt_interval i_p = graph.down_P(cur_p);
+            uint64_t cur_o = graph.min_O_in_P(i_p, cur_p);
+            cur_o = graph.next_O_in_P(i_p, cur_p, triple_pattern->o->constant);
+            if (cur_o == 0 || cur_o != triple_pattern->o->constant) {
+              return 0;
+            }
+            bwt_interval i_o = graph.down_P_O(i_p, cur_p, cur_o);
+            return i_o.size();
+        }
+    }
+    return 0;
+}
+
 //! TODO:
 /*!
  * \returns TODO:
@@ -213,7 +299,7 @@ vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &
     for (Triple *triple_pattern : query)
     {
         // OLD: getting the triple_size and storing it into each variable of the triple pattern. Which means every variable has the same weight.
-        // uint64_t triple_size = get_size_interval(triple_pattern, graph);
+        //uint64_t triple_size = get_size_interval(triple_pattern, graph_spo);
         // OLD: Storing the triple_size of each variable for all triple_patterns.
         auto hash_map = get_num_diff_values(triple_pattern, graph_spo, crc_arrays);
         if (triple_pattern->s->isVariable)

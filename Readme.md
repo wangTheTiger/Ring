@@ -40,9 +40,3 @@ Here we need to give the path of the the file that contains all the queries. Bes
 - If we selected the file `wikidata-enumerated.dat` we have to select the absolute path of the file called `Queries-wikidata-benchmark.txt`.
 
 Now we are finished! After running this step we will execute the queries. In console we should see the number of the query, the number of results and the time taken by each one of the queries.
-
-5. **[OPTIONAL]** If we would want to run the `CRing` code instead, you should [download this version of our source code](http://compact-leapfrog.tk/files/CRing.zip). All the steps are equivalent.
-
----
-
-At the moment, we can find the rest of the complementary material at [this webpage](http://compact-leapfrog.tk/). Note that we will find instructions to run the code there, and although the instructions are different from the ones in this repository, they should work too.
