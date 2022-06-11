@@ -84,12 +84,12 @@ public:
             // cout << "SIZE: " << varname << " " << iterator_last.size() << endl;
             for (pair<uint64_t, uint64_t> binding_last : iterator_last) {
                 // Limit
-                if (*number_of_results >= 1000) {
+                /*if (*number_of_results >= 1000) {
                     break;
-                }
+                }*/
                 // TO
                 std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
-                if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
+                if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 1200) {
                     break;
                 }
                 if (level >= (this->gao->size() - 1)) {
@@ -121,15 +121,15 @@ public:
             bool search = true;
             while (search) {
                 // Limit
-                if (*number_of_results >= 1000) {
+                /*if (*number_of_results >= 1000) {
                     for (Iterator* triple_iterator : *var_iterators) {
                         triple_iterator->up();
                     }
                     break;
-                }
+                }*/
                 // TO
                 std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
-                if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
+                if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 1200) {
                     for (Iterator* triple_iterator : *var_iterators) {
                         triple_iterator->up();
                     }
