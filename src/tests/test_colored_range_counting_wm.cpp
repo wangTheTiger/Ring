@@ -57,14 +57,14 @@ int main()
     std::cout << "  rank de 0s = " << wm.rank(wm.size(), 0) << std::endl;
     std::cout << "  rank de 8s = " << wm.rank(wm.size(), 8) << std::endl;
     //! This function counts distinct values on a range. It's based on Muthukrishnan's Colored range counting algorithm.
-    //! See algorithm 2 here: https://users.dcc.uchile.cl/~gnavarro/ps/tcs11.2.pdf
+    //! See algorithm 2 here: https://users.dcc.uchile.cl/~gnavarro/ps/tcs11.2.pdf Important: 
     auto res = wm.range_search_2d(4,9,0,3, false);
     auto count = get<0>(res);
     std::cout << " # of Distinct values in range [4, 9] : " << count << std::endl;
     res = wm.range_search_2d(9,10,0,8, false);
     count = get<0>(res);
     std::cout << " # of Distinct values in range [9, 10] : " << count << std::endl;
-    res = wm.range_search_2d(0,10,0,0, false);
+    res = wm.range_search_2d(1,11,0,0, false);//! Important: you must start from 1, not from 0.
     count = get<0>(res);
-    std::cout << " # of Distinct values in full range [0, 10] : " << count << std::endl;
+    std::cout << " # of Distinct values in full range [1, 11] : " << count << std::endl;
 }

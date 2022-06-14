@@ -32,11 +32,12 @@ private:
 
 public:
     crc() = default;
-    crc(bwt_type &wm_l);
+    crc(bwt_type &wm_l, bool build_index = true);
     void load(string filename);
     void save(string filename);
     uint64_t get_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, uint64_t rng_s, uint64_t rng_e);
     uint64_t get_number_distinct_values(uint64_t l, uint64_t r);
+    void print();
 };
 
 void crc::save(string filename)
@@ -48,10 +49,13 @@ void crc::load(string filename)
 {
     sdsl::load_from_file(crc_L, filename + ".crc");
 }
-crc::crc(bwt_type &wm_l)
+crc::crc(bwt_type &wm_l, bool build_index)
 {
     L = wm_l;
-    build_crc_wm(0, L.size() - 1);
+    if (build_index)
+    {
+        build_crc_wm(0, L.size() - 1);
+    }
 }
 //! Buiding Colored Range Counting Array (CRC WM) based on the given Wavelet Matrix.
 /*!
@@ -85,12 +89,12 @@ bool crc::build_crc_wm(uint64_t x_s, uint64_t x_e)
         }
     }
     // CORE <<
-    // std::cout << "C = " << C << std::endl;
-    // std::cout << "Building the CRC WM based on the CRC int vector." << std::endl;
+    //std::cout << "C = " << C << std::endl;
+    //std::cout << "Building the CRC WM based on the CRC int vector." << std::endl;
     construct_im(crc_L, C);
     try
     {
-        // std::cout << "CRC WM size : " << crc_L.size() << std::endl;
+        //std::cout << "CRC WM size : " << crc_L.size() << std::endl;
         if (crc_L.size() > 0)
         {
             return true;
@@ -129,16 +133,21 @@ uint64_t crc::get_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, ui
  */
 uint64_t crc::get_number_distinct_values(uint64_t l, uint64_t r)
 {
+    assert(l < 1);
     // std::cout << "Calling get_number_distinct_values with range : [" << l << ", " << r << "]." << std::endl;
     uint64_t num_dist_values = 0;
     // Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
     //bool result = build_crc_wm(l, r);
     uint64_t rng_s = 0;
-    uint64_t rng_e = (r == 0) ? 0 : r - 1;
+    uint64_t rng_e = (l == 0) ? 0 : l - 1;
 
     num_dist_values = get_number_distinct_values_on_range(l, r, rng_s, rng_e);
     //num_dist_values = get_number_distinct_values_on_range(0, crc_L.size() - 1, 0, 0);
     //std::cout << "Num of distinct values : " << num_dist_values << std::endl;
     return num_dist_values;
+}
+void crc::print()
+{
+    std::cout << crc_L << std::endl;
 }
 #endif
