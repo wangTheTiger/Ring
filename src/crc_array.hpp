@@ -133,7 +133,7 @@ uint64_t crc::get_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, ui
  */
 uint64_t crc::get_number_distinct_values(uint64_t l, uint64_t r)
 {
-    assert(l < 1);
+    assert(l > 0);
     // std::cout << "Calling get_number_distinct_values with range : [" << l << ", " << r << "]." << std::endl;
     uint64_t num_dist_values = 0;
     // Build the crc wm for the entire original WT TODO: in the future this will be part of an adaptive algorithm.
