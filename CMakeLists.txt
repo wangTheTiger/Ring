@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_COMPILER "g++")
+# TODO: check issues when enabling -D_GLIBCXX_DEBUG flag.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -O0 -g3 \
 -lsdsl -ldivsufsort -ldivsufsort64")
 #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 -g0 -pthread \
@@ -51,9 +52,11 @@ endforeach(target)
 set(TEST_TARGETS
     test_colored_range_counting_wm
     test_colored_range_counting_wm2
+    test_colored_range_counting_wm3
     test_initializable_bitmap
     test_ring_sop
     test_ring_spo
+    test_colored_range_counting_wm_parameter
 )
 
 add_test(NAME test_vm COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/test_wm)
