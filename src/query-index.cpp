@@ -164,6 +164,7 @@ int main(int argc, char* argv[])
             lf.serialize();
             cout << "##########" << endl;
             */
+            lf.print_gao();
             map<string, uint64_t> bindings;
             int number_of_results = 0;
 
