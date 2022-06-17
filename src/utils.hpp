@@ -381,19 +381,19 @@ vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &
     }
     std::cout <<"PRIOR SORTING " << std::endl;
     std::cout << "single_vars : " ;
-    for(string& aux : single_vars){
+    for(auto& aux : single_vars){
         std::cout << aux << std::endl;
     }
     std::cout << "varmin_pairs : " ;
-    for(string& aux : single_vars){
-        std::cout << aux << std::endl;
+    for(auto& aux : varmin_pairs){
+        std::cout << aux.first << ", " << aux.second << std::endl;
     }
     sort((varmin_pairs).begin(), (varmin_pairs).end(), compare_by_second);
 
     std::cout <<"AFTER SORTING " << std::endl;
     std::cout << "varmin_pairs : " ;
-    for(string& aux : single_vars){
-        std::cout << aux << std::endl;
+    for(auto& aux : varmin_pairs){
+        std::cout << aux.first << ", " << aux.second << std::endl;
     }
     if (varmin_pairs.size() > 0)
     {
