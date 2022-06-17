@@ -88,10 +88,10 @@ public:
                     break;
                 }*/
                 // TO
-                std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
+                /*std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
                 if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 1200) {
                     break;
-                }
+                }*/
                 if (level >= (this->gao->size() - 1)) {
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
@@ -128,13 +128,13 @@ public:
                     break;
                 }*/
                 // TO
-                std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
+                /*std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
                 if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 1200) {
                     for (Iterator* triple_iterator : *var_iterators) {
                         triple_iterator->up();
                     }
                     break;
-                }
+                }*/
                 sort((*var_iterators).rbegin(), (*var_iterators).rend(), compare_by_current_value);
                 if ((*var_iterators)[0]->current_value() == (*var_iterators)[var_iterators->size() - 1]->current_value()) {
                     if (level >= (this->gao->size() - 1)) {

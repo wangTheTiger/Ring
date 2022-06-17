@@ -111,9 +111,9 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
         hash_map.insert({triple_pattern->s->varname, open_interval.size()});
         hash_map.insert({triple_pattern->p->varname, open_interval.size()});
         hash_map.insert({triple_pattern->o->varname, open_interval.size()});
-        //std::cout << "num_distinct_values S = " << open_interval.size() << " vs. interval size = " << open_interval.size() << std::endl;
-        //std::cout << "num_distinct_values P = " << open_interval.size() << " vs. interval size = " << open_interval.size() << std::endl;
-        //std::cout << "num_distinct_values O = " << open_interval.size() << " vs. interval size = " << open_interval.size() << std::endl;
+        std::cout << "num_distinct_values S = " << open_interval.size() << " vs. interval size = " << open_interval.size() << std::endl;
+        std::cout << "num_distinct_values P = " << open_interval.size() << " vs. interval size = " << open_interval.size() << std::endl;
+        std::cout << "num_distinct_values O = " << open_interval.size() << " vs. interval size = " << open_interval.size() << std::endl;
         return hash_map;
     }
     //Second case : ?S P ?O
@@ -139,8 +139,8 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             // Reverse Ring => Going from P to O: values must be shifted back to the left, by subtracting nTriples. Remember P is between 2 * nTriples + 1 and 3*nTriples.
             // Important: both ring's C_s and reverse ring's C_o contains range of P's ordered lexicographically, therefore they are equivalents.
             uint64_t num_distinct_values_o = crc_arrays.get_number_distinct_values_sop_BWT_O(i_p.left() - nTriples, i_p.right() - nTriples);
-            //std::cout << "num_distinct_values S = " << num_distinct_values_s << " vs. interval size = " << i_p.size() << std::endl;
-            //std::cout << "num_distinct_values O = " << num_distinct_values_o << " vs. interval size = " << i_p.size() << std::endl;
+            std::cout << "num_distinct_values S = " << num_distinct_values_s << " vs. interval size = " << i_p.size() << std::endl;
+            std::cout << "num_distinct_values O = " << num_distinct_values_o << " vs. interval size = " << i_p.size() << std::endl;
             hash_map.insert({triple_pattern->s->varname, num_distinct_values_s});
             hash_map.insert({triple_pattern->o->varname, num_distinct_values_o});
             return hash_map;
@@ -166,8 +166,8 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             // Reverse Ring => Going from O to S: values must be shifted back to the left, by subtracting nTriples. Remember O is between nTriples + 1 and 2*nTriples.
             // Important: both ring's C_s and reverse ring's C_o contains range of P's ordered lexicographically, therefore they are equivalents.
             uint64_t num_distinct_values_s = crc_arrays.get_number_distinct_values_sop_BWT_S(i_o.left() - nTriples, i_o.right() - nTriples);
-            //std::cout << "num_distinct_values S = " << num_distinct_values_s << " vs. interval size = " << i_o.size() << std::endl;
-            //std::cout << "num_distinct_values P = " << num_distinct_values_p << " vs. interval size = " << i_o.size() << std::endl;
+            std::cout << "num_distinct_values S = " << num_distinct_values_s << " vs. interval size = " << i_o.size() << std::endl;
+            std::cout << "num_distinct_values P = " << num_distinct_values_p << " vs. interval size = " << i_o.size() << std::endl;
             hash_map.insert({triple_pattern->p->varname, num_distinct_values_p});
             hash_map.insert({triple_pattern->s->varname, num_distinct_values_s});
             return hash_map;
@@ -193,8 +193,8 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             // Reverse Ring => Going from S to P:  values must be shifted to the right, by adding 2 * nTriples. Remember S is between  1 and nTriples.
             // Important: both ring's C_s and reverse ring's C_o contains range of P's ordered lexicographically, therefore they are equivalents.
             uint64_t num_distinct_values_p = crc_arrays.get_number_distinct_values_sop_BWT_P(i_s.left() + 2 * nTriples, i_s.right() + 2 * nTriples);
-            //std::cout << "num_distinct_values P = " << num_distinct_values_p << " vs. interval size = " << i_s.size() << std::endl;
-            //std::cout << "num_distinct_values O = " << num_distinct_values_o << " vs. interval size = " << i_s.size() << std::endl;
+            std::cout << "num_distinct_values P = " << num_distinct_values_p << " vs. interval size = " << i_s.size() << std::endl;
+            std::cout << "num_distinct_values O = " << num_distinct_values_o << " vs. interval size = " << i_s.size() << std::endl;
             hash_map.insert({triple_pattern->o->varname, num_distinct_values_o});
             hash_map.insert({triple_pattern->p->varname, num_distinct_values_p});
             return hash_map;
@@ -224,7 +224,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             bwt_interval i_p = graph_spo.down_S_P(i_s, cur_s, cur_p);
             // Ring => Going from P to O: values must be shifted to the right, by adding nTriples. Remember P is between nTriples + 1 and 2 * nTriples.
             uint64_t num_distinct_values_o = crc_arrays.get_number_distinct_values_spo_BWT_O(i_p.left() + nTriples, i_p.right() + nTriples);
-            //std::cout << "num_distinct_values O = " << num_distinct_values_o << " vs. interval size = " << i_p.size() << std::endl;
+            std::cout << "num_distinct_values O = " << num_distinct_values_o << " vs. interval size = " << i_p.size() << std::endl;
             hash_map.insert({triple_pattern->o->varname, num_distinct_values_o});
             return hash_map;
         }
@@ -253,7 +253,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             bwt_interval i_o = graph_spo.down_S_O(i_s, cur_o);
             // Ring => Going from O to P: values must be shifted to the left, by subtracting nTriples. Remember O is between 2 * nTriples + 1 and 3 * nTriples.
             uint64_t num_distinct_values_p = crc_arrays.get_number_distinct_values_spo_BWT_P(i_o.left() - nTriples, i_o.right() - nTriples);
-            //std::cout << "num_distinct_values P = " << num_distinct_values_p << " vs. interval size = " << i_o.size() << std::endl;
+            std::cout << "num_distinct_values P = " << num_distinct_values_p << " vs. interval size = " << i_o.size() << std::endl;
             hash_map.insert({triple_pattern->p->varname, num_distinct_values_p});
             return hash_map;
         }
@@ -282,7 +282,7 @@ std::unordered_map<string, uint64_t> get_num_diff_values(Triple *triple_pattern,
             i_p = graph_spo.down_P_O(i_p, cur_p, cur_o);
             // Ring => Going from P to S: values must be shifted to the left, by subtracting nTriples. Remember P is between nTriples + 1 and 2 * nTriples.
             uint64_t num_distinct_values_s = crc_arrays.get_number_distinct_values_spo_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples);
-            //std::cout << "num_distinct_values S = " << num_distinct_values_s << " vs. interval size = " << i_p.size() << std::endl;
+            std::cout << "num_distinct_values S = " << num_distinct_values_s << " vs. interval size = " << i_p.size() << std::endl;
             hash_map.insert({triple_pattern->s->varname, num_distinct_values_s});
             return hash_map;
         }
@@ -379,8 +379,22 @@ vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &
             selectable_vars[it->first] = false;
         }
     }
-
+    std::cout <<"PRIOR SORTING " << std::endl;
+    std::cout << "single_vars : " ;
+    for(string& aux : single_vars){
+        std::cout << aux << std::endl;
+    }
+    std::cout << "varmin_pairs : " ;
+    for(string& aux : single_vars){
+        std::cout << aux << std::endl;
+    }
     sort((varmin_pairs).begin(), (varmin_pairs).end(), compare_by_second);
+
+    std::cout <<"AFTER SORTING " << std::endl;
+    std::cout << "varmin_pairs : " ;
+    for(string& aux : single_vars){
+        std::cout << aux << std::endl;
+    }
     if (varmin_pairs.size() > 0)
     {
         selectable_vars[varmin_pairs[0].first] = true;
