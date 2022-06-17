@@ -368,10 +368,11 @@ vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &
     }
     std::cout << "related_vars : " ;
     for(auto& aux : related_vars){
-        std::cout << aux.first << ", ";
+        std::cout << aux.first << ": ";
         for(auto &aux2 : aux.second){
             std::cout << aux2 << "/";
         }
+        std::cout << " " << std::endl;
     }
     std::cout << " " << std::endl;
     for (auto it = (triple_values).cbegin(); it != (triple_values).cend(); ++it)
