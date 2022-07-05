@@ -140,14 +140,14 @@ public:
                     if (level >= (this->gao->size() - 1)) {
                         // Print Answers
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
-                        
+
                         /*
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                         }
                         cout << endl;
                         */
-                    
+
                         (*number_of_results) = (*number_of_results) + 1;
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
@@ -172,13 +172,13 @@ public:
                         for (Iterator* triple_iterator : *var_iterators) {
                             triple_iterator->up();
                         }
-                        search = false;  
-                    }          
+                        search = false;
+                    }
                 }
 
             }
         }
-        
+
     }
 
     static bool compare_by_current_value(Iterator* a, Iterator* b) {
