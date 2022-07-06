@@ -297,14 +297,16 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b)
 //! TODO:
 /*!
  * \param vector<Triple*> : The Basic Graph Pattern (query)
- * \param ring_spo&  : The Ring succinct structure
- * \param ring_sop&  : The reverse Ring.
+ * \param ring_spo : The ring compressed data structure.
+ * \param crc_arrays&  : Object containing both the ring and the reverse ring arrays that are inputs of the Muthukrishnan's Colored range counting algorithm.
+ * \param map<string, set<string>>& : related vars used for adaptive gao calculation.
+ * * \param vector<string>& : single_vars used for adaptive gao calculation.
  * \returns Vector of strings representing the global attribute order.
  */
-vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &crc_arrays)
+vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &crc_arrays, map<string, vector<Triple *>>& triples_var, map<string, set<string>>& related_vars, vector<string>& single_vars)
 {
     map<string, vector<uint64_t>> triple_values;
-    map<string, vector<Triple *>> triples_var;
+    //map<string, vector<Triple *>> triples_var;
     for (Triple *triple_pattern : query)
     {
         // OLD: getting the triple_size and storing it into each variable of the triple pattern. Which means every variable has the same weight.
@@ -343,10 +345,10 @@ vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &
 
     vector<string> gao;
     vector<pair<string, uint64_t>> varmin_pairs;
-    vector<string> single_vars;
+    //vector<string> single_vars;
     map<string, bool> selectable_vars;
     map<string, bool> selected_vars;
-    map<string, set<string>> related_vars;
+    //map<string, set<string>> related_vars;
 
     for (auto it = (triples_var).cbegin(); it != (triples_var).cend(); ++it)
     {

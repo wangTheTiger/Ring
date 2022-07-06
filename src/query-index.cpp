@@ -152,11 +152,13 @@ int main(int argc, char* argv[])
             }
 
             start = std::chrono::high_resolution_clock::now();// try with std::chrono::steady_clock
+            map<string, vector<Triple *>> triples_var;
+            vector<string> single_vars;
+            map<string, set<string>> related_vars;
+            vector<string> initial_gao = get_gao(query, graph_spo, crc_arrays, triples_var, related_vars, single_vars);
+            set_scores(query, initial_gao);
 
-            vector<string> gao = get_gao(query, graph_spo, crc_arrays);
-            set_scores(query, gao);
-
-            LeapfrogOP lf(&gao, &graph_spo, &query);
+            LeapfrogOP lf(&initial_gao, &graph_spo, &query, &triples_var, &related_vars, &single_vars, &crc_arrays);
             /*
             cout << "Query Details:" << endl;
             lf.print_query();
