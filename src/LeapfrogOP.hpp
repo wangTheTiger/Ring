@@ -22,7 +22,7 @@ public:
     vector<string>* single_vars;
     map<string, set<string>>* related_vars;
     crc_arrays* crc;
-    vector<string> processed_vars;
+    set<string> processed_vars;
     unordered_map<string,uint64_t> processed_vars_map;
     bool is_empty;
 
@@ -132,7 +132,7 @@ public:
                     {
                         return 0;
                     }
-                    bwt_interval i_p = graph_spo.down_S_P(i_s, cur_s, cur_p);
+                    bwt_interval i_p = graph_spo.down_S_P(i_s, cur_s, cur_p);//TODO: opt if i_p.size() <= SOMETHING then just return i_p.size() :-)
                     if(triple_pattern->o->varname == cur_var){
                         // Ring => Going from P to O: values must be shifted to the right, by adding nTriples. Remember P is between nTriples + 1 and 2 * nTriples.
                         return crc_arrays.get_number_distinct_values_spo_BWT_O(i_p.left() + nTriples, i_p.right() + nTriples);
@@ -158,7 +158,7 @@ public:
                     {
                         return 0;
                     }
-                    i_p = graph_spo.down_P_O(i_p, cur_p, cur_o);
+                    i_p = graph_spo.down_P_O(i_p, cur_p, cur_o);//TODO: opt if i_p.size() <= SOMETHING then just return i_p.size() :-)
                     if(triple_pattern->s->varname == cur_var){
                         // Ring => Going from P to S: values must be shifted to the left, by subtracting nTriples. Remember P is between nTriples + 1 and 2 * nTriples.
                     return crc_arrays.get_number_distinct_values_spo_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples);
@@ -178,7 +178,7 @@ public:
                 }
                 else
                 {
-                    bwt_interval i_p = graph_spo.down_P(cur_p); // Range in C array pointing to the S value.
+                    bwt_interval i_p = graph_spo.down_P(cur_p); // Range in C array pointing to the S value.//TODO: opt if i_p.size() <= SOMETHING then just return i_p.size() :-)
                     if(triple_pattern->s->varname == cur_var){
                         // Ring => Going from P to S: values must be shifted back to the left, by subtracting nTriples. Remember P is between nTriples + 1 and 2*nTriples.
                         return crc_arrays.get_number_distinct_values_spo_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples);
@@ -322,7 +322,7 @@ public:
         }
         return 0;
     }
-    void evaluate(int level, map<string, uint64_t>* bindings, int * number_of_results, std::chrono::steady_clock::time_point begin) {
+    void evaluate(int level, map<string, uint64_t>* bindings, int * number_of_results, std::chrono::steady_clock::time_point begin, std::string last_processed_var = "") {
         if (this->is_empty) {
             return;
         }
@@ -332,17 +332,17 @@ public:
             //Vector of pairs: variable and its minimum value.
             std::vector<std::pair<std::string, uint64_t>> varmin_pairs;
             //last processed variable and its value.
-            /*std::cout << "DEBUG -- processed_vars : " ;(FAB EN LA NOCHE)
+            /*std::cout << "DEBUG -- processed_vars : " ;
             for ( auto var : processed_vars){
                 std::cout << var << " ";
             }
             std::cout << "" << std::endl;*/
-            std::string last_processed_var = *(processed_vars.rbegin());//TODO: processed_vars contiene varias veces las mismas variables. Analizar...
+            assert ( last_processed_var != "");
+            //std::string last_processed_var = *(processed_vars.rbegin());//TODO: processed_vars contiene varias veces las mismas variables. Analizar...: Dejar como un set y simplemente pasar la última variable como parámetro. o no?
             auto& last_processed_value = processed_vars_map[last_processed_var];
             //1. Related vars
-            //TODO: setear el orden despues de selecionar la sig. variable?
+            //TODO: setear el orden despues de selecionar la sig. variable? R: NO, el score es fijo independiente de si estamos calculando gao adaptativamente. :-)
             auto& rel_vars = (*this->related_vars)[last_processed_var];
-            //(FAB EN LA NOCHE) ?x1 1734 ?x2 . ?x2 2059 ?x3, related_vars[x3] = x2, pero x3 esta marcada como una single var. Probar sin l'imite con esta version y la beyond_wco para ver si el num de resultados es  el mismo.
             for(auto candidate_var : rel_vars){
                 if(std::find((*this->single_vars).begin(), (*this->single_vars).end(), candidate_var) == (*this->single_vars).end() && //(1)
                     std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
@@ -364,7 +364,10 @@ public:
                         //triple_pattern->serialize_as_triple_pattern();
                     }
                     //std::cout << "DEBUG -- minimum value for candidate_var " << candidate_var << " is : " << min_num_diff_vals << std::endl;
-                    //(FAB EN LA NOCHE) std::cout << "DEBUG -- candidate_var: " << candidate_var << " last_processed_var: " << last_processed_var << " last_processed_value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
+                    if((*bindings)["?x2"] == 10216663 && (*bindings)["?x1"] == 16797400){//  && (*bindings)["?x4"] == 14445472
+                        std::cout << "DEBUG -- candidate_var: " << candidate_var << " last_processed_var: " << last_processed_var << " last_processed_value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
+                    }
+                    
                     //assert(min_num_diff_vals > 0);//(FAB EN LA NOCHE) la 3ra query da 0 resultados.
                     varmin_pairs.push_back(std::pair<std::string, uint64_t>(candidate_var,min_num_diff_vals));//TODO: quedarme con el m'inimo y tambi'en recordar que debo setear el score.
                 }
@@ -407,20 +410,20 @@ public:
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
 
-                    /*
+                    
                     for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                         cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                     }
                     cout << endl;
-                    */
+                    
                     (*number_of_results) = (*number_of_results) + 1;
 
                 } else {
                     (*bindings)[varname] = binding_last.second;
-                    processed_vars.push_back(varname);
+                    processed_vars.insert(varname);
                     processed_vars_map[varname] = (*bindings)[varname];
                     int new_level = level + 1;
-                    evaluate(new_level, bindings, number_of_results, begin);
+                    evaluate(new_level, bindings, number_of_results, begin, varname);
                 }
             }
             for (Iterator* triple_iterator : *var_iterators) {
@@ -454,22 +457,25 @@ public:
                         // Print Answers
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
 
-                        /*
+                        
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                         }
                         cout << endl;
-                        */
+                        
 
                         (*number_of_results) = (*number_of_results) + 1;
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
                     } else {
+                        if(varname=="?x4"){
+                            std::cout<< " " << std::endl;
+                        }
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
-                        processed_vars.push_back(varname);
+                        processed_vars.insert(varname);
                         processed_vars_map[varname] = (*bindings)[varname];
                         int new_level = level + 1;
-                        evaluate(new_level, bindings, number_of_results, begin);
+                        evaluate(new_level, bindings, number_of_results, begin, varname);
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
                     }
