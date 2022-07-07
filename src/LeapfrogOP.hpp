@@ -25,7 +25,7 @@ public:
     vector<string> processed_vars;
     unordered_map<string,uint64_t> processed_vars_map;
     bool is_empty;
-    
+
     LeapfrogOP(vector<string>* gao, ring_spo* graph, vector<Triple*>* query,map<string, vector<Triple *>>* triples_var, map<string, set<string>>* related_vars, vector<string>* single_vars, crc_arrays* crc) {
         this->gao = gao;
         this->graph = graph;
@@ -109,36 +109,13 @@ public:
         //Second case : ?S P ?O.
         //If processing_var's type is "?S" and has a 'last_processed_var', then is eq to Fifth case:   S P ?O.
         //Or processing_var's type is "?O" and has a 'last_processed_var', then is eq to Seventh case: ?S P O.
+        //otherwise both ?S and ?O are unbounded.
         else if (is_second_case || (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable))
         {
             //TODO: falta pensar cuando venimos desde el first case. quizas no fue una buena idea usar las booleanas is_second_case, is_... por la propagación del cachito.
-            /*
-            OLD CODE:
-            bwt_interval open_interval = graph_spo.open_PSO();
-            //First we get the minimum value of the range (for fixed P)
-            uint64_t cur_p = graph_spo.min_P(open_interval);
-            //Then the next value >= triple_pattern->p->constant.
-            cur_p = graph_spo.next_P(open_interval, triple_pattern->p->constant);
-            if (cur_p == 0 || cur_p != triple_pattern->p->constant)
-            {
-                return 0;
-            }
-            else
-            {
-                bwt_interval i_p = graph_spo.down_P(cur_p); // Range in C array pointing to the S value.
-                if(triple_pattern->s->varname == processing_var){
-                    // Ring => Going from P to S: values must be shifted back to the left, by subtracting nTriples. Remember P is between nTriples + 1 and 2*nTriples.
-                    return crc_arrays.get_number_distinct_values_spo_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples);
-                } else if(triple_pattern->o->varname == processing_var){
-                    // Reverse Ring => Going from P to O: values must be shifted back to the left, by subtracting nTriples. Remember P is between 2 * nTriples + 1 and 3*nTriples.
-                    // Important: both ring's C_s and reverse ring's C_o contains range of P's ordered lexicographically, therefore they are equivalents.
-                    return crc_arrays.get_number_distinct_values_sop_BWT_O(i_p.left() - nTriples, i_p.right() - nTriples);
-                }
-                return 0;
-            }*/
             if(triple_pattern->s->varname == last_processed_var){
                 //Eq to fifth case: S P ?O. whereas P is constant and S is variable with an existing binding.
-                std::cout << " second case with binding S" << std::endl;
+                //std::cout << "DEBUG -- second case with bounded S var" << std::endl;
                 bwt_interval open_interval = graph_spo.open_SPO();
                 uint64_t cur_s = graph_spo.min_S(open_interval);
                 cur_s = graph_spo.next_S(open_interval, last_processed_val);
@@ -164,7 +141,7 @@ public:
                 }
             } else if(triple_pattern->o->varname == last_processed_var){
                 //Eq to seventh case: ?S P O. whereas P is constant and O is variable with an existing binding.
-                std::cout << " second case with binded O" << std::endl;
+                //std::cout << "DEBUG -- second case with bounded O var" << std::endl;
                 bwt_interval open_interval = graph_spo.open_POS();
                 uint64_t cur_p = graph_spo.min_P(open_interval);
                 cur_p = graph_spo.next_P(open_interval, triple_pattern->p->constant);
@@ -188,8 +165,31 @@ public:
                     }
                     return 0;
                 }
+            }else{
+                //When only P is a constant, and both ?S and ?O are unbounded variables.
+                bwt_interval open_interval = graph_spo.open_PSO();
+                //First we get the minimum value of the range (for fixed P)
+                uint64_t cur_p = graph_spo.min_P(open_interval);
+                //Then the next value >= triple_pattern->p->constant.
+                cur_p = graph_spo.next_P(open_interval, triple_pattern->p->constant);
+                if (cur_p == 0 || cur_p != triple_pattern->p->constant)
+                {
+                    return 0;
+                }
+                else
+                {
+                    bwt_interval i_p = graph_spo.down_P(cur_p); // Range in C array pointing to the S value.
+                    if(triple_pattern->s->varname == cur_var){
+                        // Ring => Going from P to S: values must be shifted back to the left, by subtracting nTriples. Remember P is between nTriples + 1 and 2*nTriples.
+                        return crc_arrays.get_number_distinct_values_spo_BWT_S(i_p.left() - nTriples, i_p.right() - nTriples);
+                    } else if(triple_pattern->o->varname == cur_var){
+                        // Reverse Ring => Going from P to O: values must be shifted back to the left, by subtracting nTriples. Remember P is between 2 * nTriples + 1 and 3*nTriples.
+                        // Important: both ring's C_s and reverse ring's C_o contains range of P's ordered lexicographically, therefore they are equivalents.
+                        return crc_arrays.get_number_distinct_values_sop_BWT_O(i_p.left() - nTriples, i_p.right() - nTriples);
+                    }
+                    return 0;
+                }
             }
-            return 0;
         }
         //Third case ?S ?P O
         else if (is_third_case || (triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable))
@@ -329,32 +329,63 @@ public:
         //Using the pre-calculated variable from gao when the recursion starts. (level == 1)
         string varname = (*this->gao)[level];
         if(level > 0){
+            //Vector of pairs: variable and its minimum value.
+            std::vector<std::pair<std::string, uint64_t>> varmin_pairs;
             //last processed variable and its value.
+            /*std::cout << "DEBUG -- processed_vars : " ;(FAB EN LA NOCHE)
             for ( auto var : processed_vars){
-                std::cout << "processed_vars : " << var << " ";
+                std::cout << var << " ";
             }
-            std::cout << "" << std::endl;
+            std::cout << "" << std::endl;*/
             std::string last_processed_var = *(processed_vars.rbegin());//TODO: processed_vars contiene varias veces las mismas variables. Analizar...
             auto& last_processed_value = processed_vars_map[last_processed_var];
-            //Related vars TODO: WHAT ABOUT SINGLE_VARS?
+            //1. Related vars
+            //TODO: setear el orden despues de selecionar la sig. variable?
             auto& rel_vars = (*this->related_vars)[last_processed_var];
+            //(FAB EN LA NOCHE) ?x1 1734 ?x2 . ?x2 2059 ?x3, related_vars[x3] = x2, pero x3 esta marcada como una single var. Probar sin l'imite con esta version y la beyond_wco para ver si el num de resultados es  el mismo.
             for(auto candidate_var : rel_vars){
-                if(std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() )
+                if(std::find((*this->single_vars).begin(), (*this->single_vars).end(), candidate_var) == (*this->single_vars).end() && //(1)
+                    std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
                 {
-                    //variable 'var' has not been processed.
+                    //(1) variable 'candidate_var' is not marked as a single variable. //(FAB EN LA NOCHE) 
+                    //(2) variable 'var' has not been processed.
                     //Until here we just have a set of variables that can be our next one to be processed. How can we calculate them the muthu?
                     //Possible solution: We need the triples related to this variable.
                     auto& triples = (*this->triples_var)[candidate_var]; //vector<Triple *>
                     //Then I can pass those triples to: get_num_diff_values -> requires three parameters, can I get them?
                     //auto hash_map = get_num_diff_values(triple_pattern, graph_spo, crc_arrays); I really need a variant of this function that returns only a single value for OUR variable, not for every variable in the triple pattern.
                     //This new function has to consider that our variable is only once for each triple. therefore 1 CRC calc per triple has to be performed.
+                    uint64_t min_num_diff_vals = std::numeric_limits<uint64_t>::max();
                     for (Triple *triple_pattern : triples)
                     {
                         uint64_t aux = get_num_diff_values(candidate_var, last_processed_var, last_processed_value, triple_pattern, *this->graph, *this->crc);
-                        std::cout << aux << std::endl;//TODO: quedarme con el m'inimo y tambi'en recordar que debo setear el score.
+                        min_num_diff_vals = aux < min_num_diff_vals ? aux : min_num_diff_vals;
+                        //std::cout << "DEBUG -- candidate_var: " << candidate_var << " last_processed_var: " << last_processed_var << " last_processed_value: "<< last_processed_value << " num of distinct values : " << aux << " for triple: ";
+                        //triple_pattern->serialize_as_triple_pattern();
+                    }
+                    //std::cout << "DEBUG -- minimum value for candidate_var " << candidate_var << " is : " << min_num_diff_vals << std::endl;
+                    //(FAB EN LA NOCHE) std::cout << "DEBUG -- candidate_var: " << candidate_var << " last_processed_var: " << last_processed_var << " last_processed_value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
+                    //assert(min_num_diff_vals > 0);//(FAB EN LA NOCHE) la 3ra query da 0 resultados.
+                    varmin_pairs.push_back(std::pair<std::string, uint64_t>(candidate_var,min_num_diff_vals));//TODO: quedarme con el m'inimo y tambi'en recordar que debo setear el score.
+                }
+            }
+            //Getting the related variable with minimum number of different values.
+            if(varmin_pairs.size() > 0)
+            {
+                sort((varmin_pairs).begin(), (varmin_pairs).end(), [&](pair<string, int> a, pair<string, int> b) -> bool { return a.second < b.second; });
+                varname = varmin_pairs[0].first;
+            }else
+            {
+                //2. Single vars
+                for(auto &candidate_var : *this->single_vars)
+                {
+                    if(std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
+                    {
+                        varname = candidate_var;
                     }
                 }
             }
+            //std::cout << "DEBUG -- next variable : " << varname << std::endl;
         }
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
 
