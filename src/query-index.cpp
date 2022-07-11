@@ -161,8 +161,8 @@ int main(int argc, char* argv[])
             LeapfrogOP lf(&initial_gao, &graph_spo, &query, &triples_var, &related_vars, &single_vars, &crc_arrays);
             /*
             cout << "Query Details:" << endl;
-            lf.print_query();
-            lf.print_gao();
+            lf.print_query();*/
+            lf.print_gao();/*
             lf.serialize();
             cout << "##########" << endl;
             */

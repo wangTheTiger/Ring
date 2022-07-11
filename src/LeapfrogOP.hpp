@@ -331,15 +331,11 @@ public:
         if(level > 0){
             //Vector of pairs: variable and its minimum value.
             std::vector<std::pair<std::string, uint64_t>> varmin_pairs;
-            //last processed variable and its value.
-            /*std::cout << "DEBUG -- processed_vars : " ;
-            for ( auto var : processed_vars){
-                std::cout << var << " ";
-            }
-            std::cout << "" << std::endl;*/
             assert ( last_processed_var != "");
             //std::string last_processed_var = *(processed_vars.rbegin());//TODO: processed_vars contiene varias veces las mismas variables. Analizar...: Dejar como un set y simplemente pasar la última variable como parámetro. o no?
+            //last processed variable and its value.
             auto& last_processed_value = processed_vars_map[last_processed_var];
+            std::cout << "DEBUG -- evaluate level : " << level << " last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
             //1. Related vars
             //TODO: setear el orden despues de selecionar la sig. variable? R: NO, el score es fijo independiente de si estamos calculando gao adaptativamente. :-)
             auto& rel_vars = (*this->related_vars)[last_processed_var];
@@ -347,28 +343,29 @@ public:
                 if(std::find((*this->single_vars).begin(), (*this->single_vars).end(), candidate_var) == (*this->single_vars).end() && //(1)
                     std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
                 {
-                    //(1) variable 'candidate_var' is not marked as a single variable. //(FAB EN LA NOCHE) 
-                    //(2) variable 'var' has not been processed.
-                    //Until here we just have a set of variables that can be our next one to be processed. How can we calculate them the muthu?
-                    //Possible solution: We need the triples related to this variable.
+                    //(1) variable 'candidate_var' is not marked as a single variable.
+                    //(2) variable 'candidate_var' has not been processed.
+                    //Until here we just have a set of variables that can be the next one to be processed.
+                    //We need the triples related to this variable.
                     auto& triples = (*this->triples_var)[candidate_var]; //vector<Triple *>
-                    //Then I can pass those triples to: get_num_diff_values -> requires three parameters, can I get them?
-                    //auto hash_map = get_num_diff_values(triple_pattern, graph_spo, crc_arrays); I really need a variant of this function that returns only a single value for OUR variable, not for every variable in the triple pattern.
-                    //This new function has to consider that our variable is only once for each triple. therefore 1 CRC calc per triple has to be performed.
+                    //Then I can pass those triples to: get_num_diff_values
+                    //This function has to consider that our variable is only once for each triple. therefore only 1 CRC calculation has to be performed (per triple).
                     uint64_t min_num_diff_vals = std::numeric_limits<uint64_t>::max();
                     for (Triple *triple_pattern : triples)
                     {
                         uint64_t aux = get_num_diff_values(candidate_var, last_processed_var, last_processed_value, triple_pattern, *this->graph, *this->crc);
                         min_num_diff_vals = aux < min_num_diff_vals ? aux : min_num_diff_vals;
-                        //std::cout << "DEBUG -- candidate_var: " << candidate_var << " last_processed_var: " << last_processed_var << " last_processed_value: "<< last_processed_value << " num of distinct values : " << aux << " for triple: ";
+                        //std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bond value: "<< last_processed_value << " num of distinct values : " << aux << " for triple: ";
                         //triple_pattern->serialize_as_triple_pattern();
                     }
                     //std::cout << "DEBUG -- minimum value for candidate_var " << candidate_var << " is : " << min_num_diff_vals << std::endl;
-                    if((*bindings)["?x2"] == 10216663 && (*bindings)["?x1"] == 16797400){//  && (*bindings)["?x4"] == 14445472
-                        std::cout << "DEBUG -- candidate_var: " << candidate_var << " last_processed_var: " << last_processed_var << " last_processed_value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
+                    if((*bindings)["?x2"] == 10216663){
+                        std::cout << "llegue" <<std::endl;
                     }
-                    
-                    //assert(min_num_diff_vals > 0);//(FAB EN LA NOCHE) la 3ra query da 0 resultados.
+                    if((*bindings)["?x2"] == 10216663 && (*bindings)["?x1"] == 16797400){//  && (*bindings)["?x4"] == 14445472
+                        std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
+                    }
+                    //assert(min_num_diff_vals > 0);
                     varmin_pairs.push_back(std::pair<std::string, uint64_t>(candidate_var,min_num_diff_vals));//TODO: quedarme con el m'inimo y tambi'en recordar que debo setear el score.
                 }
             }
@@ -388,7 +385,7 @@ public:
                     }
                 }
             }
-            //std::cout << "DEBUG -- next variable : " << varname << std::endl;
+            std::cout << "DEBUG -- next variable : " << varname << std::endl;
         }
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
 
