@@ -95,7 +95,7 @@ uint64_t get_size_interval(Triple * triple_pattern, ring_spo & graph) {
     return 0;
 }
 
-//! TODO:
+//! TODO: Used by the non-adaptive gao approach.
 /*!
  * \returns TODO:
  */
@@ -294,7 +294,7 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b)
     return a.second < b.second;
 }
 
-//! TODO:
+//! TODO: Calculates Global Attribute Elimination Order (gao) before Leapfrog happens.
 /*!
  * \param vector<Triple*> : The Basic Graph Pattern (query)
  * \param ring_spo : The ring compressed data structure.

@@ -152,25 +152,27 @@ int main(int argc, char* argv[])
             }
 
             start = std::chrono::high_resolution_clock::now();// try with std::chrono::steady_clock
-            map<string, vector<Triple *>> triples_var;
-            vector<string> single_vars;
-            map<string, set<string>> related_vars;
-            vector<string> initial_gao = get_gao(query, graph_spo, crc_arrays, triples_var, related_vars, single_vars);
-            set_scores(query, initial_gao);
+            //map<string, vector<Triple *>> triples_var;
+            //vector<string> single_vars;
+            //map<string, set<string>> related_vars;
+            //vector<string> initial_gao = get_next_eliminated_variable(query, graph_spo, crc_arrays, triples_var, related_vars, single_vars);
+            //TODO: no hay necesidad de obtener el gao completo, a menos que tome tiempo constante.
+            //set_scores(query, initial_gao);
 
-            LeapfrogOP lf(&initial_gao, &graph_spo, &query, &triples_var, &related_vars, &single_vars, &crc_arrays);
+            map<string, uint64_t> bindings;
+            int number_of_results = 0;
+            LeapfrogOP lf(&graph_spo, &query, &crc_arrays, &bindings, &number_of_results);
             /*
             cout << "Query Details:" << endl;
-            lf.print_query();*/
-            lf.print_gao();/*
+            lf.print_query();
+            lf.print_gao();
             lf.serialize();
             cout << "##########" << endl;
             */
-            map<string, uint64_t> bindings;
-            int number_of_results = 0;
 
             std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-            lf.evaluate(0, &bindings, &number_of_results, begin);
+            lf.evaluate(0, begin);
+            lf.print_gao();
             //std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
             stop = std::chrono::high_resolution_clock::now();

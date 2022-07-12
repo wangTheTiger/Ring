@@ -15,6 +15,7 @@ Triple::Triple(Term* s, Term* p, Term* o) {
 
 void Triple::set_scores(vector<string>& gao) {
     int count = 0;
+    //First we count the number of variables in the triple. if there are two and 1 fixed value then 'count' reflects this.
     if (!this->s->isVariable) {
         this->s_score = -1;
         count++;
