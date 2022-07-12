@@ -102,13 +102,13 @@ Triple* get_triple(string & s, vector<Term*> & terms_created) {
     terms_created.push_back(t3);
     return new Triple(t1, t2, t3);
 }
-
+/*TODO: remove it.
 void set_scores(vector<Triple*>& query, vector<string>& gao) {
     for (Triple* triple_pattern : query) {
         triple_pattern->set_scores(gao);
     }
 }
-
+*/
 int main(int argc, char* argv[])
 {
     vector<string> dummy_queries;

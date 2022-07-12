@@ -8,11 +8,11 @@ Triple::Triple(Term* s, Term* p, Term* o) {
     this->s = s;
     this->p = p;
     this->o = o;
-    this->s_score = -2;
+    this->s_score = -2;//TODO: remove scoring system.
     this->p_score = -2;
     this->o_score = -2;
 }
-
+/*
 void Triple::set_scores(vector<string>& gao) {
     int count = 0;
     //First we count the number of variables in the triple. if there are two and 1 fixed value then 'count' reflects this.
@@ -55,8 +55,9 @@ void Triple::set_scores(vector<string>& gao) {
     }
 
 
-}
-
+}*/
+//TODO: delete *_score.
+/*
 void Triple::serialize() {
     if (this->s->isVariable) {
         std::cout << "s: " << this->s->varname << endl;
@@ -81,7 +82,7 @@ void Triple::serialize() {
     std::cout << "score o: " << this->o_score << endl;
 
 }
-
+*/
 void Triple::serialize_as_triple_pattern() {
     if (this->s->isVariable) {
         std::cout << this->s->varname << " ";

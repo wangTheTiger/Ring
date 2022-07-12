@@ -12,11 +12,11 @@
 #include "crc_arrays.hpp"
 
 class LeapfrogOP {
-public:
+private:
     vector<Triple*>* query;
     ring_spo* graph;
     map<string, vector<Iterator*>> query_iterators;
-    vector<Iterator*> all_iterators;
+    vector<Iterator*> all_iterators;//TODO> use smartpointers!
     map<string, vector<Triple *>> triples_var;
     vector<string> single_vars;
     map<string, set<string>> related_vars;
@@ -27,6 +27,7 @@ public:
     int number_of_vars;
     map<string, uint64_t>* bindings;
     int* number_of_results;
+public:
     //Stores the attribute elimination order during execution.
     std::vector<std::string> gao;
     LeapfrogOP(ring_spo* graph, vector<Triple*>* query, crc_arrays* crc, map<string, uint64_t>* bindings, int * number_of_results) {
@@ -38,8 +39,8 @@ public:
         this->bindings = bindings;
         this->number_of_results = number_of_results;
         //Calculate the initial attribute (var) to eliminate by LTJ.
-        gao.push_back(get_next_eliminated_variable());
-        /*
+        gao.push_back(get_next_eliminated_variable_build_iterators(""));
+        /* TODO: must be calculated 'on the fly'
         for (Triple* triple_pattern : *query) {
             Iterator* triple_iterator = new Iterator(triple_pattern, graph);
             if (triple_iterator->is_empty) {
@@ -526,7 +527,7 @@ public:
         }
         auto varname = gao[0];
         if(level > 0){
-            varname = get_next_eliminated_variable();
+            varname = get_next_eliminated_variable_build_iterators(last_processed_var);
         }
         std::cout << "DEBUG -- next variable : " << varname << std::endl;
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
@@ -638,13 +639,53 @@ public:
     static bool compare_by_current_value(Iterator* a, Iterator* b) {
         return a->current_value() < b->current_value();
     }
-
-
-    //! TODO: Adaptative calculation of Global Attribute Elimination Order (gao). Similar to 'get_gao' (utils.hpp) function.
+    //! TODO: 
     /*!
+    * Important: along returning the next variable in the gao, this function is also responsible for building the iterators required for the LTJ to work.
+    * Iterators are built for each related variable of the next variable to eliminate, unless they already exists. (previously created by former step).
+    */
+    std::string get_next_eliminated_variable_build_iterators(std::string last_processed_var)
+    {
+        auto next_var = get_next_eliminated_variable(last_processed_var);
+
+        //Building iterators if they dont exists.
+        if(this->query_iterators.find(next_var) == this->query_iterators.end())
+        {
+            //for the next_variable to be eliminated, we need to search if its triples have an iterator or not.
+            for(auto& triple : triples_var[next_var])
+            {
+                if(triple->s->isVariable)
+                {
+                      if(triple->s->varname.compare(next_var) == 0)
+                      {
+                          std::cout << "tired"<<std::endl;
+                      }
+                }
+
+                if(triple->p->isVariable)
+                {
+                      if(triple->p->varname.compare(next_var) == 0)
+                      {
+                          std::cout << "tired"<<std::endl;
+                      }
+                }
+
+                if(triple->o->isVariable)
+                {
+                      if(triple->o->varname.compare(next_var) == 0)
+                      {
+                          std::cout << "tired"<<std::endl;
+                      }
+                }
+            }
+        }
+        return next_var;
+    }
+    //! TODO: Adaptative calculation of Global Attribute Elimination Order (gao). Similar to 'get_gao' (utils.hpp) function. (TODO: do it private)
+    /*! 
     * \returns std::string representing the next attribute to eliminate by LTJ algorithm.
     */
-    std::string get_next_eliminated_variable()
+    std::string get_next_eliminated_variable(std::string last_processed_var = "")
     {
         //First variable.
         if(gao.size() == 0){
@@ -743,7 +784,6 @@ public:
             //Vector of pairs: variable and its minimum value.
             std::vector<std::pair<std::string, uint64_t>> varmin_pairs;
             //last processed variable and its value.
-            auto last_processed_var = gao[gao.size() - 1];
             assert ( last_processed_var != "");
             auto& last_processed_value = processed_vars_map[last_processed_var];
             std::cout << "DEBUG -- evaluate level : " << gao.size() << " last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
@@ -776,7 +816,7 @@ public:
                         std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
                     }
                     //assert(min_num_diff_vals > 0);
-                    varmin_pairs.push_back(std::pair<std::string, uint64_t>(candidate_var,min_num_diff_vals));//TODO: quedarme con el m'inimo y tambi'en recordar que debo setear el score.
+                    varmin_pairs.push_back(std::pair<std::string, uint64_t>(candidate_var,min_num_diff_vals));
                 }
             }
             //Getting the related variable with minimum number of different values.
