@@ -23,7 +23,7 @@ public:
     /*!
     * Calling this function assumes that next_var is in the triple.
     */
-    Iterator(std::string next_var, Triple* triple_pattern, ring_spo* graph) {
+    Iterator(std::string next_var, Triple* triple_pattern, ring_spo* graph, std::string previous_var = "") {
         this->triple = triple_pattern;
         this->graph = graph;
         this->current_level = -1;
@@ -37,7 +37,8 @@ public:
         //Second case : ?S P ?O
         else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable)
         {
-            if(triple->s->varname.compare(next_var)==0){
+            //If previous variable (variable that has 'next_var' as related) is an 'object' then the order POS takes precedence. It acts like a "reverse order" flag.
+            if(triple->s->varname.compare(next_var)==0 && !triple->o->varname.compare(previous_var)==0){
                 //Eq to : else if (triple->s_score == 1 && triple->p_score == -1 && triple->o_score == 2)
                 this->index_name = "PSO";
 
@@ -141,7 +142,7 @@ public:
         {
             //Eq to: if (triple->s_score == -1 && triple->p_score == -1)
             this->index_name = "SPO";
-            
+
             // Down from before-first to first
             this->i_s = this->graph->open_SPO();
             this->current_level += 1;
@@ -165,7 +166,7 @@ public:
         {
             //Eq to : else if (triple->s_score == -1 && triple->o_score == -1)
             this->index_name = "SOP";
-            
+
             // Down from before-first to first
             this->i_s = this->graph->open_SOP();
             this->current_level += 1;
@@ -189,7 +190,7 @@ public:
         {
             //Eq to : else if (triple->p_score == -1 && triple->o_score == -1)
             this->index_name = "POS";
-            
+
             // Down from before-first to first
             this->i_p = this->graph->open_POS();
             this->current_level += 1;

@@ -549,12 +549,12 @@ public:
                 if (level >= (number_of_vars - 1)) {
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
-
+                    /*
                     for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                         cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                     }
                     cout << endl;
-
+                    */
                     (*number_of_results) = (*number_of_results) + 1;
 
                 } else {
@@ -594,13 +594,13 @@ public:
                 if ((*var_iterators)[0]->current_value() == (*var_iterators)[var_iterators->size() - 1]->current_value()) {
                     if (level >= (number_of_vars - 1)) {
                         // Print Answers
-                        (*bindings)[varname] = (*var_iterators)[0]->current_value();
+                        /*(*bindings)[varname] = (*var_iterators)[0]->current_value();
 
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                         }
                         cout << endl;
-
+                        */
                         (*number_of_results) = (*number_of_results) + 1;
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
@@ -639,33 +639,75 @@ public:
     static bool compare_by_current_value(Iterator* a, Iterator* b) {
         return a->current_value() < b->current_value();
     }
+
     //! TODO: 
     /*!
-    * Important: along returning the next variable in the gao, this function is also responsible of building the iterators required for the LTJ to work.
+    * Checks if var is in gao array. if so it means all triples in which var is into where already processed,
+      and therefore their iterators were created and assigned to their respective variables, which includes 'var'.
+    */
+    bool triples_processed(std::string var)
+    {
+        /*
+            Finds the element in the given range of numbers.
+            Returns an iterator to the first element in the range [first,last) that compares equal to val.
+            If no such element is found, the function returns last.
+        */
+        if(std::find(gao.begin(), gao.end(), var) != gao.end())
+            return true;
+        else
+            return false;
+    }
+    //! TODO: 
+    /*!
+    * Important: Besides returning the next variable in the gao, this function is also responsible of building the iterators required for the LTJ to work.
     * Iterators are built per each next variable to eliminate, unless they already exists. (previously created by former step).
     * It requires to check whether the related vars don't have an iterator for the same triple.
     */
     std::string get_next_eliminated_variable_build_iterators(std::string last_processed_var)
     {
         auto next_var = get_next_eliminated_variable(last_processed_var);
-        gao.push_back(next_var);
+
+        unordered_map<std::string, Triple *> processed_triples;
         //Building iterators if they dont exists.
         if(this->query_iterators.find(next_var) == this->query_iterators.end())
         {
-            //for the next_variable to be eliminated, we need to search if its triples have an iterator or not.
-            for(auto& triple : triples_var[next_var])
-            {
-                //TODO: DELETE IT std::vector<std::string> a = {"?x2", "?x3", "?x1"};
-                //TODO: DELETE IT triple->set_scores(a);
-                //triple->set_scores(gao);
-                Iterator* triple_iterator = new Iterator(next_var, triple, graph);
-                if (triple_iterator->is_empty) {
-                    this->is_empty = true;
+            if(!triples_processed(next_var)){
+                //for the next_variable to be eliminated, we need to search if its triples have an iterator or not.
+                for(auto& triple : triples_var[next_var])
+                {
+                    //triple->set_scores(gao);
+                    Iterator* triple_iterator = new Iterator(next_var, triple, graph);
+                    if (triple_iterator->is_empty) {
+                        this->is_empty = true;//TODO: if we are in this case, should we need to continue with candidate_vars?
+                    }
+                    //Assigning the iterator to all variables involved in the triples of next_var.
+                    //this->query_iterators[next_var].push_back(triple_iterator);
+                    if(triple->s->isVariable)
+                    {
+                        this->query_iterators[triple->s->varname].push_back(triple_iterator);
+                    }
+                    if(triple->p->isVariable)
+                    {
+                        this->query_iterators[triple->p->varname].push_back(triple_iterator);
+                    }
+                    if(triple->o->isVariable)
+                    {
+                        this->query_iterators[triple->o->varname].push_back(triple_iterator);
+                    }
+                    all_iterators.push_back(triple_iterator);
+                    //Per each related variable of 'next_var'
+                    /*auto& rel_vars = (this->related_vars)[next_var];
+                    //We also create a new iterator or reuse the one created before on 'next_var' related variables.
+                    for(auto candidate_var : rel_vars){//TODO: OKAY CREE BIEN EL DE X2 pero ahora, para X1 y X4 *rel vars* necesito nuevamente 'saber' que x2 va primero.
+                        Iterator* triple_iterator = new Iterator(candidate_var, triple, graph, next_var);
+                        this->query_iterators[candidate_var].push_back(triple_iterator);
+                        all_iterators.push_back(triple_iterator);
+                    }*/
                 }
-                this->query_iterators[next_var].push_back(triple_iterator);
-                all_iterators.push_back(triple_iterator);
             }
         }
+        //Finally we add the next_var to the gao vector, which marks the variable as processed.
+        gao.push_back(next_var);
         return next_var;
     }
     //! TODO: Adaptative calculation of Global Attribute Elimination Order (gao). Similar to 'get_gao' (utils.hpp) function. (TODO: do it private)
