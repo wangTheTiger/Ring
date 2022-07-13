@@ -18,7 +18,198 @@ public:
     uint64_t cur_p;
     uint64_t cur_o;
     bool is_empty;
-    
+
+    //! TODO: 
+    /*!
+    * Calling this function assumes that next_var is in the triple.
+    */
+    Iterator(std::string next_var, Triple* triple_pattern, ring_spo* graph) {
+        this->triple = triple_pattern;
+        this->graph = graph;
+        this->current_level = -1;
+        this->is_empty = false;
+
+        //First case: ?S ?P ?O
+        if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable)
+        {
+            //TODO: Pending
+        }
+        //Second case : ?S P ?O
+        else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable)
+        {
+            if(triple->s->varname.compare(next_var)==0){
+                //Eq to : else if (triple->s_score == 1 && triple->p_score == -1 && triple->o_score == 2)
+                this->index_name = "PSO";
+
+                // Down from before-first to first
+                this->i_p = this->graph->open_PSO();
+                this->current_level += 1;
+
+                this->cur_p = this->graph->min_P(this->i_p);
+                this->cur_p = this->graph->next_P(this->i_p, this->triple->p->constant);
+
+                if (this->cur_p == 0) {
+                    this->is_empty = true;
+                }
+            }
+            else{
+                //Eq to : else if (triple->s_score == 2 && triple->p_score == -1 && triple->o_score == 1)
+                this->index_name = "POS";
+
+                // Down from before-first to first
+                this->i_p = this->graph->open_POS();
+                this->current_level += 1;
+
+                this->cur_p = this->graph->min_P(this->i_p);
+                this->cur_p = this->graph->next_P(this->i_p, this->triple->p->constant);
+
+                if (this->cur_p == 0) {
+                    this->is_empty = true;
+                }
+            }
+        }
+        //Third case ?S ?P O
+        else if (triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable)
+        {
+            if(triple->s->varname.compare(next_var)==0){
+                //Eq to : else if (triple->s_score == 1 && triple->p_score == 2 && triple->o_score == -1)
+                this->index_name = "OSP";
+
+                // Down from before-first to first
+                this->i_o = this->graph->open_OSP();
+                this->current_level += 1;
+
+                this->cur_o = this->graph->min_O(this->i_o);
+                this->cur_o = this->graph->next_O(this->i_o, this->triple->o->constant);
+
+                if (this->cur_o == 0) {
+                    this->is_empty = true;
+                }
+            }
+            else{
+                //Eq to : else if (triple->s_score == 2 && triple->p_score == 1 && triple->o_score == -1)
+                this->index_name = "OPS";
+
+                // Down from before-first to first
+                this->i_o = this->graph->open_OPS();
+                this->current_level += 1;
+
+                this->cur_o = this->graph->min_O(this->i_o);
+                this->cur_o = this->graph->next_O(this->i_o, this->triple->o->constant);
+
+                if (this->cur_o == 0) {
+                    this->is_empty = true;
+                }
+            }
+        }
+        //Fourth case S ?P ?O
+        else if (!triple_pattern->s->isVariable && triple_pattern->p->isVariable && triple_pattern->o->isVariable)
+        {
+            if(triple->p->varname.compare(next_var)==0){
+                //Eq to : else if (triple->s_score == -1 && triple->p_score == 1 && triple->o_score == 2)
+                this->index_name = "SPO";
+
+                // Down from before-first to first
+                this->i_s = this->graph->open_SPO();
+                this->current_level += 1;
+
+                this->cur_s = this->graph->min_S(this->i_s);
+                this->cur_s = this->graph->next_S(this->i_s, this->triple->s->constant);
+
+                if (this->cur_s == 0) {
+                    this->is_empty = true;
+                }
+            }
+            else{
+                //Eq to : else if (triple->s_score == -1 && triple->p_score == 2 && triple->o_score == 1)
+                this->index_name = "SOP";
+
+                // Down from before-first to first
+                this->i_s = this->graph->open_SOP();
+                this->current_level += 1;
+
+                this->cur_s = this->graph->min_S(this->i_s);
+                this->cur_s = this->graph->next_S(this->i_s, this->triple->s->constant);
+
+                if (this->cur_s == 0) {
+                    this->is_empty = true;
+                }
+            }
+        }
+        //Fifth case S P ?O
+        else if (!triple_pattern->s->isVariable && !triple_pattern->p->isVariable && triple_pattern->o->isVariable)
+        {
+            //Eq to: if (triple->s_score == -1 && triple->p_score == -1)
+            this->index_name = "SPO";
+            
+            // Down from before-first to first
+            this->i_s = this->graph->open_SPO();
+            this->current_level += 1;
+
+            this->cur_s = this->graph->min_S(this->i_s);
+            this->cur_s = this->graph->next_S(this->i_s, this->triple->s->constant);
+
+            // Down
+            this->i_p = this->graph->down_S(this->cur_s);
+            this->current_level += 1;
+
+            this->cur_p = this->graph->min_P_in_S(this->i_p, this->cur_s);
+            this->cur_p = this->graph->next_P_in_S(this->i_p, this->cur_s, this->triple->p->constant);
+
+            if (this->cur_s == 0 || this->cur_p == 0) {
+                this->is_empty = true;
+            }
+        }
+        //Sixth case S ?P O
+        else if (!triple_pattern->s->isVariable && triple_pattern->p->isVariable && !triple_pattern->o->isVariable)
+        {
+            //Eq to : else if (triple->s_score == -1 && triple->o_score == -1)
+            this->index_name = "SOP";
+            
+            // Down from before-first to first
+            this->i_s = this->graph->open_SOP();
+            this->current_level += 1;
+
+            this->cur_s = this->graph->min_S(this->i_s);
+            this->cur_s = this->graph->next_S(this->i_s, this->triple->s->constant);
+
+            // Down
+            this->i_o = this->graph->down_S(this->cur_s);
+            this->current_level += 1;
+
+            this->cur_o = this->graph->min_O_in_S(this->i_o);
+            this->cur_o = this->graph->next_O_in_S(this->i_o, this->triple->o->constant);
+
+            if (this->cur_s == 0 || this->cur_o == 0) {
+                this->is_empty = true;
+            }
+        }
+        //Seventh case ?S P O
+        else if (triple_pattern->s->isVariable && !triple_pattern->p->isVariable && !triple_pattern->o->isVariable)
+        {
+            //Eq to : else if (triple->p_score == -1 && triple->o_score == -1)
+            this->index_name = "POS";
+            
+            // Down from before-first to first
+            this->i_p = this->graph->open_POS();
+            this->current_level += 1;
+
+            this->cur_p = this->graph->min_P(this->i_p);
+            this->cur_p = this->graph->next_P(this->i_p, this->triple->p->constant);
+
+            // Down
+            this->i_o = this->graph->down_P(this->cur_p);
+            this->current_level += 1;
+
+            this->cur_o = this->graph->min_O_in_P(this->i_o, this->cur_p);
+            this->cur_o = this->graph->next_O_in_P(this->i_o, this->cur_p, this->triple->o->constant);
+
+            if (this->cur_p == 0 || this-> cur_o == 0) {
+                this->is_empty = true;
+            }
+        }
+    }
+
     Iterator(Triple* triple, ring_spo* graph) {
         this->triple = triple;
         this->graph = graph;
@@ -166,7 +357,7 @@ public:
                 this->is_empty = true;
             }
 
-        } else if (triple->s_score == 2 && triple->p_score == 1 && triple->o_score == 3) {
+        } else if (triple->s_score == 2 && triple->p_score == 1 && triple->o_score == 3) {//Triple ?S ?P ?O with gao vars as follows: P first, then S and finally O.
             this->index_name = "PSO";
 
             // Ready to perform down()
@@ -213,7 +404,6 @@ public:
 
             // Ready to perform down()
         }
-
     }
 
     void down() {

@@ -14,7 +14,8 @@ class Triple {
         int s_score;
         int p_score;
         int o_score;
-        void set_scores(vector<string>&);
+        //void set_scores(vector<string>&);
+        //void set_scores(std::string&);
         void serialize();
         void serialize_as_triple_pattern();
         bool contains_variable(string);

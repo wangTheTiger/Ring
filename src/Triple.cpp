@@ -8,10 +8,12 @@ Triple::Triple(Term* s, Term* p, Term* o) {
     this->s = s;
     this->p = p;
     this->o = o;
-    this->s_score = -2;//TODO: remove scoring system.
+    /*
+    this->s_score = -2;
     this->p_score = -2;
-    this->o_score = -2;
+    this->o_score = -2;*/
 }
+//TODO: remove it
 /*
 void Triple::set_scores(vector<string>& gao) {
     int count = 0;
@@ -53,9 +55,8 @@ void Triple::set_scores(vector<string>& gao) {
     if (this->o->isVariable) {
         this->o_score -= prev_count;
     }
-
-
-}*/
+}
+*/
 //TODO: delete *_score.
 /*
 void Triple::serialize() {

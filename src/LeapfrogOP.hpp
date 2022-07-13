@@ -39,7 +39,7 @@ public:
         this->bindings = bindings;
         this->number_of_results = number_of_results;
         //Calculate the initial attribute (var) to eliminate by LTJ.
-        gao.push_back(get_next_eliminated_variable_build_iterators(""));
+        get_next_eliminated_variable_build_iterators("");
         /* TODO: must be calculated 'on the fly'
         for (Triple* triple_pattern : *query) {
             Iterator* triple_iterator = new Iterator(triple_pattern, graph);
@@ -641,48 +641,35 @@ public:
     }
     //! TODO: 
     /*!
-    * Important: along returning the next variable in the gao, this function is also responsible for building the iterators required for the LTJ to work.
-    * Iterators are built for each related variable of the next variable to eliminate, unless they already exists. (previously created by former step).
+    * Important: along returning the next variable in the gao, this function is also responsible of building the iterators required for the LTJ to work.
+    * Iterators are built per each next variable to eliminate, unless they already exists. (previously created by former step).
+    * It requires to check whether the related vars don't have an iterator for the same triple.
     */
     std::string get_next_eliminated_variable_build_iterators(std::string last_processed_var)
     {
         auto next_var = get_next_eliminated_variable(last_processed_var);
-
+        gao.push_back(next_var);
         //Building iterators if they dont exists.
         if(this->query_iterators.find(next_var) == this->query_iterators.end())
         {
             //for the next_variable to be eliminated, we need to search if its triples have an iterator or not.
             for(auto& triple : triples_var[next_var])
             {
-                if(triple->s->isVariable)
-                {
-                      if(triple->s->varname.compare(next_var) == 0)
-                      {
-                          std::cout << "tired"<<std::endl;
-                      }
+                //TODO: DELETE IT std::vector<std::string> a = {"?x2", "?x3", "?x1"};
+                //TODO: DELETE IT triple->set_scores(a);
+                //triple->set_scores(gao);
+                Iterator* triple_iterator = new Iterator(next_var, triple, graph);
+                if (triple_iterator->is_empty) {
+                    this->is_empty = true;
                 }
-
-                if(triple->p->isVariable)
-                {
-                      if(triple->p->varname.compare(next_var) == 0)
-                      {
-                          std::cout << "tired"<<std::endl;
-                      }
-                }
-
-                if(triple->o->isVariable)
-                {
-                      if(triple->o->varname.compare(next_var) == 0)
-                      {
-                          std::cout << "tired"<<std::endl;
-                      }
-                }
+                this->query_iterators[next_var].push_back(triple_iterator);
+                all_iterators.push_back(triple_iterator);
             }
         }
         return next_var;
     }
     //! TODO: Adaptative calculation of Global Attribute Elimination Order (gao). Similar to 'get_gao' (utils.hpp) function. (TODO: do it private)
-    /*! 
+    /*!
     * \returns std::string representing the next attribute to eliminate by LTJ algorithm.
     */
     std::string get_next_eliminated_variable(std::string last_processed_var = "")
@@ -698,7 +685,9 @@ public:
                     auto var_aux = hash_map.find(triple_pattern->s->varname);
                     if(var_aux != hash_map.end()){
                         auto var_weight = var_aux->second;
+                        //variable weights
                         triple_values[triple_pattern->s->varname].push_back(var_weight);
+                        //Triples per variable
                         triples_var[triple_pattern->s->varname].push_back(triple_pattern);
                     }
 
@@ -745,15 +734,16 @@ public:
                     }
                 }
             }
-            //Single vars
+
             for (auto it = (triple_values).cbegin(); it != (triple_values).cend(); ++it)
             {
                 if (triple_values[it->first].size() == 1)
-                {
+                {   //Single vars
                     single_vars.push_back(it->first);
                 }
                 else
                 {
+                    //Variables participating in more than 1 triple are added to varmin_pairs.
                     varmin_pairs.push_back(pair<string, uint64_t>(it->first, *min_element(triple_values[it->first].begin(), triple_values[it->first].end())));
                 }
             }
@@ -786,7 +776,7 @@ public:
             //last processed variable and its value.
             assert ( last_processed_var != "");
             auto& last_processed_value = processed_vars_map[last_processed_var];
-            std::cout << "DEBUG -- evaluate level : " << gao.size() << " last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
+            std::cout << "DEBUG -- last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
             //1. Related vars
             auto& rel_vars = (this->related_vars)[last_processed_var];
             for(auto candidate_var : rel_vars){
