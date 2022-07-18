@@ -913,7 +913,7 @@ public:
             {
                 if(this->single_vars.size() == 0)
                 {
-                    std::cout << " toasty " << std::endl;
+                    std::cout << " toasty " << std::endl;//TODO: remove me.
                 }
                 //2. Single vars
                 for(auto &candidate_var : this->single_vars)
