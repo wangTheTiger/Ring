@@ -19,11 +19,12 @@ public:
     uint64_t cur_o;
     bool is_empty;
 
-    //! TODO: 
+    //! TODO:
     /*!
     * Calling this function assumes that next_var is in the triple.
     */
     Iterator(std::string next_var, Triple* triple_pattern, ring_spo* graph, std::string previous_var = "") {
+        this->cur_s = this->cur_p = this->cur_o = std::numeric_limits<uint64_t>::max();
         this->triple = triple_pattern;
         this->graph = graph;
         this->current_level = -1;
