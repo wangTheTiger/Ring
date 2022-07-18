@@ -51,6 +51,14 @@ public:
         }
     }
 
+    std::string get_gao() {
+        std::string str;
+        for (string varname : (*this->gao)) {
+            str = str + varname + " ";
+        }
+        return str;
+    }
+
     void print_gao() {
         cout << "GAO: " << endl;
         for (string varname : (*this->gao)) {
