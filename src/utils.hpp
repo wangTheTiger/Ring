@@ -296,10 +296,10 @@ bool compare_by_second(pair<string, int> a, pair<string, int> b)
 
 //! TODO:
 /*!
- * \param vector<Triple*> : the Basic graph pattern (query)
+ * \param vector<Triple*> : The Basic Graph Pattern (query)
  * \param ring_spo&  : The Ring succinct structure
  * \param ring_sop&  : The reverse Ring.
- * \returns Vector of strings representing variable order.
+ * \returns Vector of strings representing the global attribute order.
  */
 vector<string> get_gao(vector<Triple *> query, ring_spo &graph_spo, crc_arrays &crc_arrays)
 {

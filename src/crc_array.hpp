@@ -120,8 +120,7 @@ bool crc::build_crc_wm(uint64_t x_s, uint64_t x_e)
 uint64_t crc::get_number_distinct_values_on_range(uint64_t x_s, uint64_t x_e, uint64_t rng_s, uint64_t rng_e)
 {
     // std::cout << "get_number_distinct_values_on_range [" << x_s << ", " << x_e << "]" << std::endl;
-    auto res = crc_L.range_search_2d(x_s, x_e, rng_s, rng_e, false);
-    return get<0>(res);
+    return crc_L.count_range_search_2d(x_s, x_e, rng_s, rng_e);
 }
 
 //! TODO: fix comment -> First it builds a compact Colored Range Counting representation (CRC) of the BWT.L and then, it calculates the number of different values. Both CRC and BWT.L are Wavelet Matrices.
