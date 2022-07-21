@@ -313,7 +313,6 @@ public:
             //TODO: falta pensar cuando venimos desde el first case. quizas no fue una buena idea usar las booleanas is_second_case, is_... por la propagación del cachito.
             if(triple_pattern->s->varname == last_processed_var){
                 //Eq to fifth case: S P ?O. whereas P is constant and S is variable with an existing binding.
-                //std::cout << "DEBUG -- second case with bounded S var" << std::endl;
                 bwt_interval open_interval = graph->open_SPO();
                 uint64_t cur_s = graph->min_S(open_interval);
                 cur_s = graph->next_S(open_interval, last_processed_val);
@@ -339,7 +338,6 @@ public:
                 }
             } else if(triple_pattern->o->varname == last_processed_var){
                 //Eq to seventh case: ?S P O. whereas P is constant and O is variable with an existing binding.
-                //std::cout << "DEBUG -- second case with bounded O var" << std::endl;
                 bwt_interval open_interval = graph->open_POS();
                 uint64_t cur_p = graph->min_P(open_interval);
                 cur_p = graph->next_P(open_interval, triple_pattern->p->constant);
@@ -529,7 +527,7 @@ public:
         if(level > 0){
             varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
         }
-        std::cout << "DEBUG -- next variable : " << varname << std::endl;
+        std::cout << "Next variable : " << varname << std::endl;
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
 
         if ((*var_iterators).size() == 1 && ((*var_iterators)[0]->current_level == 1)) {
@@ -549,12 +547,12 @@ public:
                 if (level >= (number_of_vars - 1)) {
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
-                    
+                    /*
                     for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                         cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                     }
                     cout << endl;
-                    
+                    */
                     (*number_of_results) = (*number_of_results) + 1;
 
                 } else {
@@ -595,12 +593,12 @@ public:
                     if (level >= (number_of_vars - 1)) {
                         // Print Answers
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
-
+                        /*
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                         }
                         cout << endl;
-                        
+                        */
                         (*number_of_results) = (*number_of_results) + 1;
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
@@ -807,7 +805,7 @@ public:
                 }
             }
             number_of_vars = triples_var.size();
-            std::cout << "Number of variables : " << number_of_vars << std::endl;
+            //std::cout << "Number of variables : " << number_of_vars << std::endl;
             vector<pair<string, uint64_t>> varmin_pairs;
 
             //Related vars
@@ -871,7 +869,7 @@ public:
             //last processed variable and its value.
             assert ( last_processed_var != "");
             auto& last_processed_value = processed_vars_map[last_processed_var];
-            std::cout << "DEBUG -- last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
+            std::cout << "Last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
             //1. Related vars
             auto& rel_vars = (this->related_vars)[last_processed_var];
             for(auto candidate_var : rel_vars){
@@ -890,16 +888,16 @@ public:
                     {
                         uint64_t aux = get_num_diff_values(candidate_var, last_processed_var, last_processed_value, triple_pattern);
                         min_num_diff_vals = aux < min_num_diff_vals ? aux : min_num_diff_vals;
-                        //std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bond value: "<< last_processed_value << " num of distinct values : " << aux << " for triple: ";
-                        //triple_pattern->serialize_as_triple_pattern();
                     }
-                    //std::cout << "DEBUG -- minimum value for candidate_var " << candidate_var << " is : " << min_num_diff_vals << std::endl;
+                    /*DEBUGGING CODE TODO: REMOTE IT
                     if((*bindings)["?x2"] == 10216663){
-                        std::cout << "llegue" <<std::endl;
-                    }
-                    if((*bindings)["?x2"] == 10216663 && (*bindings)["?x1"] == 16797400){//  && (*bindings)["?x4"] == 14445472
-                        std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
-                    }
+-                        std::cout << "llegue" <<std::endl;
+-                    }
+-                    if((*bindings)["?x2"] == 10216663 && (*bindings)["?x1"] == 16797400){//  && (*bindings)["?x4"] == 14445472
+-                        std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
+                     }
+                    */
+                    //std::cout << "Minimum value for candidate_var " << candidate_var << " is : " << min_num_diff_vals << std::endl;
                     //assert(min_num_diff_vals > 0);
                     varmin_pairs.push_back(std::pair<std::string, uint64_t>(candidate_var,min_num_diff_vals));
                 }

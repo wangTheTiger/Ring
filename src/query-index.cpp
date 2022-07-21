@@ -172,7 +172,6 @@ int main(int argc, char* argv[])
 
             std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
             lf.evaluate(0, begin);
-            lf.print_gao();
             //std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
             stop = std::chrono::high_resolution_clock::now();
