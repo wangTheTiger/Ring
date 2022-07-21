@@ -542,19 +542,19 @@ public:
                     break;
                 }
                 // TO
-                /*std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
                 if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
                     break;
-                }*/
+                }
                 if (level >= (number_of_vars - 1)) {
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
-                    /*
+                    
                     for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                         cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                     }
                     cout << endl;
-                    */
+                    
                     (*number_of_results) = (*number_of_results) + 1;
 
                 } else {
@@ -583,24 +583,24 @@ public:
                     break;
                 }
                 // TO
-                /*std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
                 if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
                     for (Iterator* triple_iterator : *var_iterators) {
                         triple_iterator->up();
                     }
                     break;
-                }*/
+                }
                 sort((*var_iterators).rbegin(), (*var_iterators).rend(), compare_by_current_value);
                 if ((*var_iterators)[0]->current_value() == (*var_iterators)[var_iterators->size() - 1]->current_value()) {
                     if (level >= (number_of_vars - 1)) {
                         // Print Answers
-                        /*(*bindings)[varname] = (*var_iterators)[0]->current_value();
+                        (*bindings)[varname] = (*var_iterators)[0]->current_value();
 
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                         }
                         cout << endl;
-                        */
+                        
                         (*number_of_results) = (*number_of_results) + 1;
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
@@ -667,10 +667,10 @@ public:
     {
         //When all iterators are built we mark as if all the triples were processed, therefore we can get the next variable from the gao std::vector.
         //Remember: old code does this: string varname = (*this->gao)[level]; therefore level represents the gao index.
-        /*if(this->number_of_vars != 0 && gao.size() >= this->number_of_vars)
+        if(this->number_of_vars != 0 && gao.size() >= this->number_of_vars)
         {
             return gao[level];
-        }*/
+        }
         auto next_var = get_next_eliminated_variable(last_processed_var);
         //Building iterators if they dont exists.
         //if(this->query_iterators.find(next_var) == this->query_iterators.end())
