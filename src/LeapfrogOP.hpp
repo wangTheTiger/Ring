@@ -68,6 +68,14 @@ public:
         }
     }
 
+    std::string get_gao() {
+        std::string str;
+        for (string varname : gao) {
+            str = str + varname + " ";
+        }
+        return str;
+    }
+
     void print_gao() {
         cout << "GAO: " << endl;
         for (string varname : gao) {
@@ -527,7 +535,7 @@ public:
         if(level > 0){
             varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
         }
-        std::cout << "Next variable : " << varname << std::endl;
+        //std::cout << "Next variable : " << varname << std::endl;
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
 
         if ((*var_iterators).size() == 1 && ((*var_iterators)[0]->current_level == 1)) {
@@ -869,7 +877,7 @@ public:
             //last processed variable and its value.
             assert ( last_processed_var != "");
             auto& last_processed_value = processed_vars_map[last_processed_var];
-            std::cout << "Last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
+            //std::cout << "Last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
             //1. Related vars
             auto& rel_vars = (this->related_vars)[last_processed_var];
             for(auto candidate_var : rel_vars){

@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
             total_time = time_span.count();
 
             cout << nQ <<  ";" << number_of_results << ";" << (unsigned long long)(total_time*1000000000ULL) << std::endl;
-
+            //cout << nQ << ";" << lf.get_gao() << std::endl;
             //cout << nQ <<  ";" << number_of_results << ";" << total_time << ";" << aux << ";" << total_time - aux << endl;
             nQ++;
 
