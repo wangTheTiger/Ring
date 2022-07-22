@@ -16,13 +16,22 @@ private:
     vector<Triple*>* query;
     ring_spo* graph;
     map<string, vector<Iterator*>> query_iterators;
-    vector<Iterator*> all_iterators;//TODO> use smartpointers!
+    vector<Iterator*> all_iterators;//TODO: use smartpointers!
     map<string, vector<Triple *>> triples_var;
     vector<string> single_vars;
     map<string, set<string>> related_vars;
     crc_arrays* crc;
-    set<string> processed_vars;
-    unordered_map<string,uint64_t> processed_vars_map;
+
+    /**Important:
+     * 'processed_var' stacks all variables during a snapshot of the LTJ algorithm execution.
+     * It reflects all valid bindings of '*bindings'.
+     * For instance, if there 3 variables x1, x2 and x3, and the algorithm is "evaluating" third variable, then processed_var=[x1,x2] and it will 'push_back' x3 when bound.
+     * If recursion goes back some levels, then its corresponding stacked variables are removed from 'processed_var' with a 'pop'.
+     *
+     * processed_vars_umap stores the bound value of a stacked var. use it only in conjuntion for valid results.
+     */
+    std::stack<std::string> processed_vars;
+    unordered_map<string,uint64_t> processed_vars_umap;
     bool is_empty;
     int number_of_vars;
     map<string, uint64_t>* bindings;
@@ -535,7 +544,7 @@ public:
         if(level > 0){
             varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
         }
-        //std::cout << "Next variable : " << varname << std::endl;
+        std::cout << "Next variable : " << varname << std::endl;
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
 
         if ((*var_iterators).size() == 1 && ((*var_iterators)[0]->current_level == 1)) {
@@ -549,24 +558,24 @@ public:
                 }
                 // TO
                 std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
-                if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
+                /*if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
                     break;
-                }
+                }*/
                 if (level >= (number_of_vars - 1)) {
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
-                    /*
+                    
                     for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                         cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                     }
                     cout << endl;
-                    */
+                    
                     (*number_of_results) = (*number_of_results) + 1;
 
                 } else {
                     (*bindings)[varname] = binding_last.second;
-                    processed_vars.insert(varname);
-                    processed_vars_map[varname] = (*bindings)[varname];
+                    processed_vars.push(varname);
+                    processed_vars_umap[varname] = (*bindings)[varname];
                     int new_level = level + 1;
                     evaluate(new_level, begin, varname);
                 }
@@ -590,30 +599,30 @@ public:
                 }
                 // TO
                 std::chrono::steady_clock::time_point to_time = std::chrono::steady_clock::now();
-                if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
+                /*if (std::chrono::duration_cast<std::chrono::seconds> (to_time - begin).count() >= 600) {
                     for (Iterator* triple_iterator : *var_iterators) {
                         triple_iterator->up();
                     }
                     break;
-                }
+                }*/
                 sort((*var_iterators).rbegin(), (*var_iterators).rend(), compare_by_current_value);
                 if ((*var_iterators)[0]->current_value() == (*var_iterators)[var_iterators->size() - 1]->current_value()) {
                     if (level >= (number_of_vars - 1)) {
                         // Print Answers
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
-                        /*
+                        
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                         }
                         cout << endl;
-                        */
+                        
                         (*number_of_results) = (*number_of_results) + 1;
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
                     } else {
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
-                        processed_vars.insert(varname);
-                        processed_vars_map[varname] = (*bindings)[varname];
+                        processed_vars.push(varname);
+                        processed_vars_umap[varname] = (*bindings)[varname];
                         int new_level = level + 1;
                         evaluate(new_level, begin, varname);
                         int next_value = (*var_iterators)[0]->current_value() + 1;
@@ -671,12 +680,12 @@ public:
     */
     std::string get_next_eliminated_variable_build_iterators(int level, std::string last_processed_var)
     {
-        //When all iterators are built we mark as if all the triples were processed, therefore we can get the next variable from the gao std::vector.
+        //TODO: "GAO contiene todas las vars que han sido procesadas hasta el momento." OLD: When all iterators are built we mark as if all the triples were processed, therefore we can get the next variable from the gao std::vector.
         //Remember: old code does this: string varname = (*this->gao)[level]; therefore level represents the gao index.
-        if(this->number_of_vars != 0 && gao.size() >= this->number_of_vars)
+        /*if(this->number_of_vars != 0 && gao.size() >= this->number_of_vars)
         {
             return gao[level];
-        }
+        }*/
         auto next_var = get_next_eliminated_variable(last_processed_var);
         //Building iterators if they dont exists.
         //if(this->query_iterators.find(next_var) == this->query_iterators.end())
@@ -876,13 +885,14 @@ public:
             std::vector<std::pair<std::string, uint64_t>> varmin_pairs;
             //last processed variable and its value.
             assert ( last_processed_var != "");
-            auto& last_processed_value = processed_vars_map[last_processed_var];
+            auto& last_processed_value = processed_vars_umap[last_processed_var];
             //std::cout << "Last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
             //1. Related vars
             auto& rel_vars = (this->related_vars)[last_processed_var];
             for(auto candidate_var : rel_vars){
                 if(std::find((this->single_vars).begin(), (this->single_vars).end(), candidate_var) == (this->single_vars).end() && //(1)
-                    std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
+                    //std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
+                    processed_vars_umap.find(candidate_var) == processed_vars_umap.end()) // (2)
                 {
                     //(1) variable 'candidate_var' is not marked as a single variable.
                     //(2) variable 'candidate_var' has not been processed.
@@ -897,14 +907,10 @@ public:
                         uint64_t aux = get_num_diff_values(candidate_var, last_processed_var, last_processed_value, triple_pattern);
                         min_num_diff_vals = aux < min_num_diff_vals ? aux : min_num_diff_vals;
                     }
-                    /*DEBUGGING CODE TODO: REMOTE IT
-                    if((*bindings)["?x2"] == 10216663){
--                        std::cout << "llegue" <<std::endl;
--                    }
--                    if((*bindings)["?x2"] == 10216663 && (*bindings)["?x1"] == 16797400){//  && (*bindings)["?x4"] == 14445472
--                        std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
-                     }
-                    */
+                    //DEBUGGING CODE TODO: REMOVE IT.
+                    if((*bindings)["?x1"] == 835979){
+                        std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
+                    }
                     //std::cout << "Minimum value for candidate_var " << candidate_var << " is : " << min_num_diff_vals << std::endl;
                     //assert(min_num_diff_vals > 0);
                     varmin_pairs.push_back(std::pair<std::string, uint64_t>(candidate_var,min_num_diff_vals));
@@ -924,7 +930,7 @@ public:
                 //2. Single vars
                 for(auto &candidate_var : this->single_vars)
                 {
-                    if(std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
+                    if(processed_vars_umap.find(candidate_var) == processed_vars_umap.end())  // (2)
                     {
                         return candidate_var;
                     }
