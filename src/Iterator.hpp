@@ -6,7 +6,11 @@
 #include "ring_spo.hpp"
 
 class Iterator {
+private:
+    int id;
 public:
+    static int number_of_iters;
+    std::string created_by;
     Triple* triple;
     ring_spo* graph;
     string index_name;
@@ -18,12 +22,14 @@ public:
     uint64_t cur_p;
     uint64_t cur_o;
     bool is_empty;
-
     //! TODO:
     /*!
     * Calling this function assumes that next_var is in the triple.
     */
     Iterator(std::string next_var, Triple* triple_pattern, ring_spo* graph, std::string previous_var = "") {
+        Iterator::number_of_iters++;
+        this->id = Iterator::number_of_iters;
+        this->created_by = next_var;
         this->cur_s = this->cur_p = this->cur_o = std::numeric_limits<uint64_t>::max();
         this->triple = triple_pattern;
         this->graph = graph;
@@ -408,6 +414,10 @@ public:
         }
     }
 
+    int get_id(){
+        return id;
+    }
+
     void down() {
         // SPO
         if (this->index_name.compare("SPO") == 0) {
@@ -707,5 +717,5 @@ public:
 
 };
 
-
+int Iterator::number_of_iters = 0;
 #endif //LEAPFROG_ITERATOR_H
