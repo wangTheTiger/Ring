@@ -54,7 +54,7 @@ public:
         //get_next_eliminated_variable_build_iterators(0, "");
         auto initial_var = get_next_variable("");
         processed_vars_2.push(initial_var);
-        build_iterators(0, initial_var);
+        build_iterators(initial_var);
     }
 
     ~LeapfrogOP() {
@@ -580,8 +580,9 @@ public:
             if(processed_vars_2.size() - 1 < level){
                 //We push the new candidate variable to the top of the stack.
                 processed_vars_2.push(varname);
+                //build_iterators(varname);
             }
-            build_iterators(level, varname);
+            build_iterators(varname);
         }
         std::cout << "Next variable : " << varname << std::endl;
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
@@ -719,45 +720,37 @@ public:
     }
     //! TODO: 
     /*!
-    * Important: Besides returning the next variable in the adaptive gao, this function is also responsible of building the iterators required for the LTJ to work.
-    * Per each variable to eliminate we build its iterators, unless they already exists. (previously created by former step).
-    * It requires to check whether the related vars don't have an iterator for the same triple.
     */
-    void build_iterators(int level, std::string next_var)
+    void build_iterators(std::string next_var)
     {
         //The next_variable to be eliminated is contained in N triples. We need to check if those triples have an iterator or not.
         for(auto& triple : triples_var[next_var]){
-            Iterator* triple_iterator = new Iterator(next_var, triple, graph);
-            if (triple_iterator->is_empty) {
-                this->is_empty = true;//TODO: if we are in this case, should we need to continue with candidate_vars?
-            }
-            //If the triple of 'next_var' does not have any of its related vars of 'next_var' with an iterator.
-            if(triple->s->isVariable)
-            {
-                //(1) if the 'next_var' to be eliminated is a 'subject'.
-                if(triple->s->varname.compare(next_var) == 0) // (1)
-                falta y que no este ya en otro triple de p u o. podria ser con el gao tmp, loop y veo si está ahi.
-                {
-                    this->query_iterators[triple->s->varname].push_back(triple_iterator);
-                }
-            }
-            if(triple->p->isVariable)
-            {
-                //(1) if the 'next_var' to be eliminated is a 'predicate'.
-                if(triple->p->varname.compare(next_var) == 0) // (1)
-                {
-                    this->query_iterators[triple->p->varname].push_back(triple_iterator);
-                }
-            }
-            if(triple->o->isVariable)
-            {
-                //(1) if the 'next_var' to be eliminated is a 'object'.
-                if(triple->o->varname.compare(next_var) == 0) // (1)
-                {
-                    this->query_iterators[triple->o->varname].push_back(triple_iterator);
+            bool added_to_next_var=false;
+            Iterator* triple_iterator = new Iterator(next_var, triple, graph);//TODO: mem leak
+            //this->query_iterators[next_var].push_back(triple_iterator);
+            //Get the related vars of 'next_var'
+            auto& rel_vars = (this->related_vars)[next_var];
+            for(auto rel_var : rel_vars){
+                //if 'rel_var' was processed we assume its iterators exists, which means that the current iterator was already created before.
+                if(std::find_if(level_var_umap.begin(), level_var_umap.end(), [&rel_var](auto it){return it.second == rel_var; }) == level_var_umap.end()){//TODO: lineal search, can it be improved?
+
+                    //Per each triple we check whether any of the 'rel_var' participates along 'next_var'
+                    if((triple->s->isVariable && triple->s->varname == rel_var) ||
+                        (triple->p->isVariable && triple->p->varname == rel_var) ||
+                        (triple->o->isVariable && triple->o->varname == rel_var)
+                        )
+                    {
+                        this->query_iterators[rel_var].push_back(triple_iterator);
+                        if(!added_to_next_var){
+                            this->query_iterators[next_var].push_back(triple_iterator);
+                            added_to_next_var=true;
+                        }
+                    }
                 }
             }
         }
+        //TODO: get rid of this vector at all.
+        processed_var_iterators.push_back(next_var);
         /*
         //auto next_var = get_next_eliminated_variable(last_processed_var);
 
