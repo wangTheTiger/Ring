@@ -32,6 +32,7 @@ private:
      */
     std::stack<std::string> processed_vars;
     std::unordered_map<std::string,uint64_t> processed_vars_umap;
+    //Represents the adaptative gao per query, useful internally but is only valid when query finishes (because of the back and forth).
     std::unordered_map<int, std::string> level_var_umap;
     //'Processed_var_iterators' stores the list of variables that have their iterators fully created.Before it was wrongly called 'gao' which does not makes sense in an adaptive algorithm.
     std::vector<std::string> processed_var_iterators;
@@ -281,7 +282,7 @@ public:
     * \returns TODO:
     */
     uint64_t get_num_diff_values(string cur_var, string last_processed_var, uint64_t last_processed_val, Triple *triple_pattern){
-        
+
         const uint64_t nTriples = graph->get_n_triples();
         bool is_second_case = false, is_third_case = false, is_fourth_case = false;
         //First case: ?S ?P ?O
@@ -517,74 +518,28 @@ public:
         assert(this->number_of_vars > 0);
         if (this->is_empty) {
             return;
-        }
-        auto varname = processed_var_iterators[0];
-        level_var_umap[level] = varname;
+        }        
+        std::string varname = "";
         if(level > 0){
             //varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
             varname = get_next_variable(last_processed_var);
-            level_var_umap[level] = varname;
-            // >> Managing the removal of iterators created for an order is no longer valid.
-            /*while(processed_vars_2.size() - 1 > level){
-                auto var_to_delete_iters = processed_vars_2.top();
-                
-                processed_vars_2.pop();
-            }*/
-            //Another scenario, i.e. :
-            //'last_processed_var' has two related vars, A, and B. For several evaluate()/seek() calls
-            //we were getting As and all of a sudden we get an B. This happens when B's # of different values is smaller than A's.
-            //In this scenario two things happens: A is still in the top of the stack (processed_vars_2.top()). We need pop it and also delete its iterators.
-            //Adding the next variable only if is different than the last one. (Remember that when doing 'seek()'!=0 we remain in the same variable.
-            //All of the above should happen exclusively when we are still on the same 'level'.
-            if(processed_vars_2.size() - 1 == level && processed_vars_2.top() != varname){
-                auto var_to_delete_iters = processed_vars_2.top();
-                for (Iterator* triple_iterator : this->query_iterators[var_to_delete_iters]) {
-                    int iter_id = triple_iterator->get_id();
-                    //We need to only delete iterators that were created by the time 'var_to_delete_iters' was processed, not the ones that were assigned cause 'var_to_delete_iters' is a related var.
-                    if(triple_iterator->created_by == var_to_delete_iters){
-                        //Entering here means that the iterator was created by 'var_to_delete_iters'. Therefore it has to be first removed from the iterators vector of 'var_to_delete_iters' and 'rel_var', and then deleted.
-                        {
-                            auto& v = this->query_iterators[var_to_delete_iters];
-                            //Find the first element in [begin,end), where its id matches 'iter_id'.
-                            std::vector<Iterator*>::iterator it = std::find_if(v.begin(), v.end(), [&iter_id](auto it){return it->get_id() == iter_id; });
-                            if(it != v.end()){
-                                v.erase(it);
-                            }
-                        }
-                        {
-                            auto& rel_vars = (this->related_vars)[var_to_delete_iters];
-                            for(auto rel_var : rel_vars){
-                                auto& v = this->query_iterators[rel_var];
-                                //Find the first element in range [begin,end) where its id matches 'iter_id'.
-                                std::vector<Iterator*>::iterator it = std::find_if(v.begin(), v.end(), [&iter_id](auto it){return it->get_id() == iter_id; });
-                                if(it != v.end()){
-                                    v.erase(it);
-                                }
-                            }
-                        }
-                        delete triple_iterator;
-                    }/*else{
-                        {
-                            //In this case the iterator does not have to be deleted but its references has to be removed from 'var_to_delete_iters' iterators anyway.
-                            auto& v = this->query_iterators[var_to_delete_iters];
-                            std::vector<Iterator*>::iterator it = std::find_if(v.begin(), v.end(), [&iter_id](auto it){return it->get_id() == iter_id; });
-                            if(it != v.end()){
-                                v.erase(it);
-                            }
-                        }
-                    }*/
-                }
-                processed_vars_2.pop();
-            }
+            //std::cout << "Next variable : " << varname << std::endl;
+            if(remove_invalid_iterators(level, varname))
+                std::cout << "Iterators removed" << std::endl;
 
             if(processed_vars_2.size() - 1 < level){
                 //We push the new candidate variable to the top of the stack.
                 processed_vars_2.push(varname);
                 //build_iterators(varname);
             }
-            build_iterators(varname);
+            if(build_iterators(varname))
+                std::cout << "Iterators built" << std::endl;
+            level_var_umap[level] = varname;
+        }else{
+            varname = processed_var_iterators[0];
+            std::cout << "Next variable : " << varname << std::endl;
+            level_var_umap[level] = varname;
         }
-        std::cout << "Next variable : " << varname << std::endl;
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
 
         if ((*var_iterators).size() == 1 && ((*var_iterators)[0]->current_level == 1)) {
@@ -718,12 +673,75 @@ public:
         else
             return false;
     }
+    bool remove_invalid_iterators(int level, std::string varname)
+    {
+        bool iterators_removed = false;
+        // >> Managing the removal of iterators created for an order is no longer valid.
+        /*while(processed_vars_2.size() - 1 > level){
+            auto var_to_delete_iters = processed_vars_2.top();
+            
+            processed_vars_2.pop();
+        }*/
+        //Another scenario, i.e. :
+        //'last_processed_var' has two related vars, A, and B. For several evaluate()/seek() calls
+        //we were getting As and all of a sudden we get an B. This happens when B's # of different values is smaller than A's.
+        //In this scenario two things happens: A is still in the top of the stack (processed_vars_2.top()). We need pop it and also delete its iterators.
+        //Adding the next variable only if is different than the last one. (Remember that when doing 'seek()'!=0 we remain in the same variable.
+        //All of the above should happen exclusively when we are still on the same 'level'.
+        if(processed_vars_2.size() - 1 == level && processed_vars_2.top() != varname){
+            auto var_to_delete_iters = processed_vars_2.top();
+            for (Iterator* triple_iterator : this->query_iterators[var_to_delete_iters]) {
+                int iter_id = triple_iterator->get_id();
+                //We need to only delete iterators that were created by the time 'var_to_delete_iters' was processed, not the ones that were assigned cause 'var_to_delete_iters' is a related var.
+                if(triple_iterator->created_by == var_to_delete_iters){
+                    //Entering here means that the iterator was created by 'var_to_delete_iters'. Therefore it has to be first removed from the iterators vector of 'var_to_delete_iters' and 'rel_var', and then deleted.
+                    {
+                        auto& v = this->query_iterators[var_to_delete_iters];
+                        //Find the first element in [begin,end), where its id matches 'iter_id'.
+                        std::vector<Iterator*>::iterator it = std::find_if(v.begin(), v.end(), [&iter_id](auto it){return it->get_id() == iter_id; });
+                        if(it != v.end()){
+                            v.erase(it);
+                        }
+                    }
+                    {
+                        auto& rel_vars = (this->related_vars)[var_to_delete_iters];
+                        for(auto rel_var : rel_vars){
+                            auto& v = this->query_iterators[rel_var];
+                            //Find the first element in range [begin,end) where its id matches 'iter_id'.
+                            std::vector<Iterator*>::iterator it = std::find_if(v.begin(), v.end(), [&iter_id](auto it){return it->get_id() == iter_id; });
+                            if(it != v.end()){
+                                v.erase(it);
+                            }
+                        }
+                    }
+                    delete triple_iterator;
+                    iterators_removed = true;
+                }/*else{
+                    {
+                        //In this case the iterator does not have to be deleted but its references has to be removed from 'var_to_delete_iters' iterators anyway.
+                        auto& v = this->query_iterators[var_to_delete_iters];
+                        std::vector<Iterator*>::iterator it = std::find_if(v.begin(), v.end(), [&iter_id](auto it){return it->get_id() == iter_id; });
+                        if(it != v.end()){
+                            v.erase(it);
+                        }
+                    }
+                }*/
+            }
+            processed_vars_2.pop();
+        }
+        return iterators_removed;
+    }
     //! TODO: 
     /*!
     */
-    void build_iterators(std::string next_var)
+    bool build_iterators(std::string next_var)
     {
-        //The next_variable to be eliminated is contained in N triples. We need to check if those triples have an iterator or not.
+        bool iterators_built = false;
+        //If 'next_var' hasn't been processed before.
+        if(std::find_if(level_var_umap.begin(), level_var_umap.end(), [&next_var](auto it){return it.second == next_var; }) != level_var_umap.end()){
+            return iterators_built;
+        }
+        //The next variable to be eliminated is contained in N triples. We need to check if those triples have an iterator or not.
         for(auto& triple : triples_var[next_var]){
             bool added_to_next_var=false;
             Iterator* triple_iterator = new Iterator(next_var, triple, graph);//TODO: mem leak
@@ -740,6 +758,7 @@ public:
                         (triple->o->isVariable && triple->o->varname == rel_var)
                         )
                     {
+                        iterators_built = true;
                         this->query_iterators[rel_var].push_back(triple_iterator);
                         if(!added_to_next_var){
                             this->query_iterators[next_var].push_back(triple_iterator);
@@ -751,6 +770,7 @@ public:
         }
         //TODO: get rid of this vector at all.
         processed_var_iterators.push_back(next_var);
+        return iterators_built;
         /*
         //auto next_var = get_next_eliminated_variable(last_processed_var);
 

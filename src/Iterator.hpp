@@ -9,7 +9,7 @@ class Iterator {
 private:
     int id;
 public:
-    static int number_of_iters;
+    static int number_of_iters;//TODO: restart on each query.
     std::string created_by;
     Triple* triple;
     ring_spo* graph;
