@@ -543,7 +543,7 @@ public:
         if(level > 0){
             //varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
             varname = get_next_variable(level, last_processed_var);
-            std::cout << "Next variable : " << varname << std::endl;
+            //std::cout << "Next variable : " << varname << std::endl;
             //if(remove_invalid_iterators(level, varname))
             //    std::cout << "Iterators removed" << std::endl;
 
@@ -551,12 +551,13 @@ public:
                 //We push the new candidate variable to the top of the stack.
                 candidate_vars.push(varname);
             }
-            if(build_iterators(varname))
+            if(build_iterators(varname)){
                 std::cout << "Iterators built" << std::endl;
+            }
             level_candidate_var_umap[level] = varname;
         }else{
             varname = level_candidate_var_umap[0];
-            std::cout << "Next variable : " << varname << std::endl;
+            //std::cout << "Next variable : " << varname << std::endl;
         }
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
         //Special case for Lonely vars, they have only 1 iterator.
@@ -742,7 +743,7 @@ public:
         }
         //The next variable to be eliminated is contained in N triples. We need to check if those triples have an iterator or not.
         for(auto& triple : triples_var[next_var]){
-            bool added_to_next_var=false;
+            bool added_to_candidate_var=false;
             Iterator* triple_iterator = new Iterator(next_var, triple, graph);//TODO: mem leak
             //this->query_iterators[next_var].push_back(triple_iterator);
             //Get the related vars of 'next_var'
@@ -758,10 +759,14 @@ public:
                     {
                         iterators_built = true;
                         this->query_iterators[rel_var].push_back(triple_iterator);
-                        if(!added_to_next_var){
+                        if(!added_to_candidate_var){
                             this->query_iterators[next_var].push_back(triple_iterator);
-                            added_to_next_var=true;
+                            added_to_candidate_var=true;
+                            std::cout << "Iterator (created by "<< triple_iterator->created_by << ") added to " << next_var << " and " << rel_var << ", belonging to triple ";
+                        }else{
+                            std::cout << "Iterator (created by "<< triple_iterator->created_by << ") added to " << rel_var << ", belonging to triple ";
                         }
+                        triple->serialize_as_triple_pattern();
                     }
                 }
             }
@@ -903,7 +908,7 @@ public:
                         min_num_diff_vals = aux < min_num_diff_vals ? aux : min_num_diff_vals;
                     }
                     //DEBUGGING CODE TODO: REMOVE IT.
-                    if((*bindings)["?x1"] == 835979){
+                    if((*bindings)["?x2"] == 10216663){
                         std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
                         if(min_num_diff_vals == 0)
                             std::cout << "STOP AND THINK..." << std::endl;
