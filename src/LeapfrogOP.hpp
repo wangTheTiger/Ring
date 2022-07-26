@@ -921,7 +921,7 @@ public:
                 //2. Single vars
                 for(auto &candidate_var : this->single_vars)
                 {
-                    if(var_value_umap.find(candidate_var) == var_value_umap.end())  // (2)
+                    if(var_value_umap.find(candidate_var) == var_value_umap.end())  // (2) //TODO: GET RID OF THIS AND USE level_candidate_var_umap instead.
                     //if (!is_variable_processed(candidate_var))
                     {
                         return candidate_var;
@@ -929,7 +929,8 @@ public:
                 }
             }
         }
-        return "";
+        //When no variable can be found, we return from level_candidate_var_umap.
+        return level_candidate_var_umap[level];
     }
 };
 
