@@ -545,7 +545,7 @@ public:
             varname = get_next_variable(level, last_processed_var);
             std::cout << "Next variable : " << varname << std::endl;
             //if(remove_invalid_iterators(level, varname))
-                //std::cout << "Iterators removed" << std::endl;
+            //    std::cout << "Iterators removed" << std::endl;
 
             if(candidate_vars.size() - 1 < level){
                 //We push the new candidate variable to the top of the stack.
@@ -559,7 +559,7 @@ public:
             std::cout << "Next variable : " << varname << std::endl;
         }
         vector<Iterator*>* var_iterators = &this->query_iterators[varname];
-
+        //Special case for Lonely vars, they have only 1 iterator.
         if ((*var_iterators).size() == 1 && ((*var_iterators)[0]->current_level == 1)) {
             Iterator* triple_iterator = (*var_iterators)[0];
             vector<pair<uint64_t, uint64_t>> iterator_last = triple_iterator->down_last();
@@ -585,13 +585,15 @@ public:
                     cout << endl;
                     
                     (*number_of_results) = (*number_of_results) + 1;
-
                 } else {
                     (*bindings)[varname] = binding_last.second;
                     var_value_umap[varname] = (*bindings)[varname];
                     //level_boundvar_value_umap[level] = std::pair<std::string, uint64_t>(varname, (*bindings)[varname]);
                     int new_level = level + 1;
                     evaluate(new_level, begin, varname);
+
+                    //Remove 'varname' from umap
+                    var_value_umap.erase(varname);
                 }
             }
             for (Iterator* triple_iterator : *var_iterators) {
