@@ -414,6 +414,9 @@ public:
         }
     }
 
+    ~Iterator() {
+        Iterator::number_of_iters--;
+    }
     int get_id(){
         return id;
     }

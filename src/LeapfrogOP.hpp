@@ -543,19 +543,13 @@ public:
         if(level > 0){
             //varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
             varname = get_next_variable(level, last_processed_var);
-            std::cout << "Next variable : " << varname << std::endl;
+            //std::cout << "Next variable : " << varname << std::endl;
             remove_invalid_iterators(level, varname);
-            //if(remove_invalid_iterators(level, varname))
-            //    std::cout << "Iterators removed" << std::endl;
-
             if(candidate_vars.size() - 1 < level){
                 //We push the new candidate variable to the top of the stack.
                 candidate_vars.push(varname);
             }
-            //build_iterators(varname);
-            if(build_iterators(varname)){
-                std::cout << "Iterators built" << std::endl;
-            }
+            build_iterators(varname);
             level_candidate_var_umap[level] = varname;
         }else{
             varname = level_candidate_var_umap[0];
@@ -731,6 +725,9 @@ public:
                 level_candidate_var_umap.erase(it);
             }
         }
+        if(iterators_removed){
+                std::cout << "Iterators removed" << std::endl;
+        }
         return iterators_removed;
     }
     //! TODO: 
@@ -772,6 +769,9 @@ public:
                     }
                 }
             }
+        }
+        if(iterators_built){
+            std::cout << "Iterators built" << std::endl;
         }
         return iterators_built;
     }
@@ -910,7 +910,7 @@ public:
                         min_num_diff_vals = aux < min_num_diff_vals ? aux : min_num_diff_vals;
                     }
                     //DEBUGGING CODE TODO: REMOVE IT.
-                    if((*bindings)["?x2"] == 10216663){
+                    if((*bindings)["?x1"] == 20436835){
                         std::cout << "DEBUG -- candidate_var: " << candidate_var << " last bound var : " << last_processed_var << " last bound value: "<< last_processed_value << " minimum num of distinct values : " << min_num_diff_vals << std::endl;
                         if(min_num_diff_vals == 0)
                             std::cout << "STOP AND THINK..." << std::endl;
