@@ -543,7 +543,8 @@ public:
         if(level > 0){
             //varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
             varname = get_next_variable(level, last_processed_var);
-            //std::cout << "Next variable : " << varname << std::endl;
+            std::cout << "Next variable : " << varname << std::endl;
+            remove_invalid_iterators(level, varname);
             //if(remove_invalid_iterators(level, varname))
             //    std::cout << "Iterators removed" << std::endl;
 
@@ -551,6 +552,7 @@ public:
                 //We push the new candidate variable to the top of the stack.
                 candidate_vars.push(varname);
             }
+            //build_iterators(varname);
             if(build_iterators(varname)){
                 std::cout << "Iterators built" << std::endl;
             }
@@ -628,7 +630,7 @@ public:
                         // Print Answers
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
                         //level_boundvar_value_umap[level] = std::pair<std::string, uint64_t>(varname, (*bindings)[varname]);
-
+                        
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
                         }
