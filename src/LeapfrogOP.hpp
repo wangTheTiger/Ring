@@ -22,26 +22,18 @@ private:
     map<string, set<string>> related_vars;
     crc_arrays* crc;
 
-    /**Important:
-     * 'processed_var' stacks all variables during a snapshot of the LTJ algorithm execution.
-     * It reflects all valid bindings of '*bindings'.
-     * For instance, if there 3 variables x1, x2 and x3, and the algorithm is "evaluating" third variable, then processed_var=[x1,x2] and it will 'push_back' x3 when bound.
-     * If recursion goes back some levels, then its corresponding stacked variables are removed from 'processed_var' with a 'pop'.
-     *
-     * var_value_umap stores the bound value of a stacked var. TODO: Could it be replaced by the *binding?
-     */
-    std::unordered_map<std::string,uint64_t> var_value_umap;
-    //Implements a vector of {bound variables,values} whereas the 'level' represent its index.
-    //std::unordered_map<int, std::pair<std::string, uint64_t>> level_boundvar_value_umap;
+    std::unordered_map<std::string,uint64_t> boundvar_value_umap;
     /*
     Stack of candidate vars.
     get_next_variable() pushes variables on top of the stack. (TODO: currently the responsibility of this task is in evaluate but it has to be moved towards get_next_variable).
     Used in remove_invalid_iterators() function to determine what variable is no longer a valid candidate.
-    The top() points to a candidate var and any other position of the stack to a bound variable.
+    The top() points to a candidate var and any other position of the stack points to a bound variable.
     */
     std::stack<std::string> candidate_vars;
-    //Represents the adaptative gao per query, useful internally but is only valid when query finishes (because of the back and forth). It should hold the same values than the processed_var stack.
-    std::unordered_map<int, std::string> level_candidate_var_umap; // level & candidate variable
+    /*
+    Contains the level and the variable in a unordered map. It should always reflect what is in the candidate_vars stack. It is used to answer "what var is at level 'X'?" in constant time.
+    */
+    std::unordered_map<int, std::string> level_candidate_var_umap;
     bool is_empty;
     int number_of_vars;
     map<string, uint64_t>* bindings;
@@ -76,32 +68,6 @@ public:
             triple->serialize_as_triple_pattern();
         }
     }
-
-    /*
-    Checks whether a variable 'var' has been already processed and added to the 'level_candidate_var_umap' structure.
-    Only the last entry represents a candidate variable. Positions [begin(), end() -1 ) are bound variables, although there is a border case when we are in the last level,
-    in that case the last entry could also be bound.
-    */
-    bool is_candidate_variable_processed(std::string var){
-        if(std::find_if(level_candidate_var_umap.begin(), level_candidate_var_umap.end(), [&var](auto it){return it.second == var; }) == level_candidate_var_umap.end()){
-            return false;
-        }
-        return true;
-    }
-    
-    /*
-    TODO: functional vs non functional approach. should I send the vector as a parameter if is part of the class? What's easier to read for a dev.?
-
-    */
-    /*bool remove_last_processed_var(int level, std::unordered_map<int, std::pair<std::string, uint64_t>>& level_boundvar_value_umap)
-    {
-        if(level_boundvar_value_umap.size() > 1){
-            level_boundvar_value_umap.erase(level);//TODO: only run this call if(level_boundvar_value_umap.size() > level)
-        } else {
-            level_boundvar_value_umap.clear();
-        }
-        return true;
-    }*/
     //! TODO: Used to calculate the starting variable of the adaptive gao approach.
     /*!
     * \returns TODO:
@@ -535,7 +501,6 @@ public:
     }
     void evaluate(int level, std::chrono::steady_clock::time_point begin, std::string last_processed_var = "") {
         assert(this->number_of_vars > 0);
-        //assert( level_boundvar_value_umap.size() <= level + 1);
         if (this->is_empty) {
             return;
         }
@@ -544,13 +509,16 @@ public:
             //varname = get_next_eliminated_variable_build_iterators(level, last_processed_var);
             varname = get_next_variable(level, last_processed_var);
             //std::cout << "Next variable : " << varname << std::endl;
+            if(level == 1 && level_candidate_var_umap[2] == "?x2"){
+                std::cout << "Toasty " << std::endl;
+            }
             remove_invalid_iterators(level, varname);
             if(candidate_vars.size() - 1 < level){
                 //We push the new candidate variable to the top of the stack.
                 candidate_vars.push(varname);
             }
             build_iterators(varname);
-            level_candidate_var_umap[level] = varname;
+            level_candidate_var_umap[level] = varname;//NO DEBERIA IR ESTO DENTRO DEL IF DE CANDIDATE_VARS, asi siempre estan sincronizadas las estructuras.
         }else{
             varname = level_candidate_var_umap[0];
             //std::cout << "Next variable : " << varname << std::endl;
@@ -574,7 +542,6 @@ public:
                 if (level >= (number_of_vars - 1)) {
                     // Print Answers
                     (*bindings)[varname] = binding_last.second;
-                    //level_boundvar_value_umap[level] = std::pair<std::string, uint64_t>(varname, (*bindings)[varname]);
                     
                     for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                         cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
@@ -584,13 +551,12 @@ public:
                     (*number_of_results) = (*number_of_results) + 1;
                 } else {
                     (*bindings)[varname] = binding_last.second;
-                    var_value_umap[varname] = (*bindings)[varname];
-                    //level_boundvar_value_umap[level] = std::pair<std::string, uint64_t>(varname, (*bindings)[varname]);
+                    boundvar_value_umap[varname] = (*bindings)[varname];
                     int new_level = level + 1;
                     evaluate(new_level, begin, varname);
 
                     //Remove 'varname' from umap
-                    var_value_umap.erase(varname);
+                    boundvar_value_umap.erase(varname);
                 }
             }
             for (Iterator* triple_iterator : *var_iterators) {
@@ -623,7 +589,6 @@ public:
                     if (level >= (number_of_vars - 1)) {
                         // Print Answers
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
-                        //level_boundvar_value_umap[level] = std::pair<std::string, uint64_t>(varname, (*bindings)[varname]);
                         
                         for(auto it = (*bindings).cbegin(); it != (*bindings).cend(); ++it) {
                             cout << "(" << it->first << ": " << (*bindings)[it->first] << ") ";
@@ -635,19 +600,19 @@ public:
                         (*var_iterators)[0]->seek(next_value);
                     } else {
                         (*bindings)[varname] = (*var_iterators)[0]->current_value();
-                        var_value_umap[varname] = (*bindings)[varname];
-                        //level_boundvar_value_umap[level] = std::pair<std::string, uint64_t>(varname, (*bindings)[varname]);
+                        boundvar_value_umap[varname] = (*bindings)[varname];
                         int new_level = level + 1;
                         evaluate(new_level, begin, varname);
                         int next_value = (*var_iterators)[0]->current_value() + 1;
                         (*var_iterators)[0]->seek(next_value);
 
                         //Remove 'varname' from umap
-                        var_value_umap.erase(varname);
+                        boundvar_value_umap.erase(varname);
                     }
                 }
                 //We attempt to find the seek_value from the first iterator into all the rest that contains the same variable that is being processed.
                 int seek_value = (*var_iterators)[0]->current_value();
+                std::cout << "level : " << level << " variable : " << varname << " seeked value : " << seek_value << std::endl;
                 if (seek_value != 0) {
                     for (int i = 1; i < var_iterators->size(); i++) {
                         (*var_iterators)[i]->seek(seek_value);
@@ -664,11 +629,6 @@ public:
                 }
 
             }
-
-            //When search is over we need to remove the last processed var from our records.
-            //remove_last_processed_var(level, level_boundvar_value_umap);
-            //if(remove_last_processed_var(level, level_boundvar_value_umap))
-            //    std::cout << "Last processed var removed" << std::endl;
         }
 
     }
@@ -680,15 +640,16 @@ public:
     bool remove_invalid_iterators(int level, std::string varname)
     {
         bool iterators_removed = false;
-        // >> Managing the removal of iterators created for an order is no longer valid.
-        //i.e. :
+        //Example of what this function does:
         //'varname' has two related vars, A, and B. For several evaluate()/seek() calls
         //We were get_next_variable() was only getting A's and all of a sudden we get an B. This happens when B's # of different values is smaller than A's.
         //In this scenario two things happens: A is still in the top of the stack (candidate_vars.top()). We need pop it and also delete its iterators.
         //We add the next variable (candidate) only if is different than the last one. (When doing 'seek()'!=0 we remain in the same variable).
         //All of the above should happen exclusively when we are still in the same 'level'.
+        std::string var_to_delete_iters = "";
+        //Is 'varname' NOT a candidate or bound variable? That happens when at the same level the top of the stack is different than 'varname'
         if(candidate_vars.size() - 1 == level && candidate_vars.top() != varname){
-            auto var_to_delete_iters = candidate_vars.top();
+            var_to_delete_iters = candidate_vars.top();
             for (Iterator* triple_iterator : this->query_iterators[var_to_delete_iters]) {
                 int iter_id = triple_iterator->get_id();
                 //We need to only delete iterators that were created by the time 'var_to_delete_iters' was processed, not the ones that were assigned cause 'var_to_delete_iters' is a related var.
@@ -717,18 +678,24 @@ public:
                     iterators_removed = true;
                 }
             }
-            std::string var_to_erase = candidate_vars.top();
-            candidate_vars.pop();
-            //Reflects the change on level_candidate_var_umap as well which has to always be in sync with 'processed_vars' stack.
-            std::unordered_map<int, std::string>::iterator it = std::find_if(level_candidate_var_umap.begin(), level_candidate_var_umap.end(), [&var_to_erase](auto it){return it.second == var_to_erase; });
-            if(it != level_candidate_var_umap.end()){
-                level_candidate_var_umap.erase(it);
-            }
+            shrink_candidate_stack();
         }
         if(iterators_removed){
-                std::cout << "Iterators removed" << std::endl;
+            assert (var_to_delete_iters != "");
+                std::cout << "Iterators removed for " << var_to_delete_iters << " cause is no longer a candidate variable "<< std::endl;
         }
         return iterators_removed;
+    }
+
+    void shrink_candidate_stack(){
+        std::string var_to_erase = candidate_vars.top();
+        candidate_vars.pop();
+        //Reflects the change on level_candidate_var_umap as well which has to always be in sync with 'processed_vars' stack.
+        std::unordered_map<int, std::string>::iterator it = std::find_if(level_candidate_var_umap.begin(), level_candidate_var_umap.end(), [&var_to_erase](auto it){return it.second == var_to_erase; });
+        if(it != level_candidate_var_umap.end()){
+            level_candidate_var_umap.erase(it);
+        }
+        std::cout << "The stack & the auxiliary unordered map is shrunk " << std::endl;
     }
     //! TODO: 
     /*!
@@ -736,11 +703,11 @@ public:
     bool build_iterators(std::string next_var)
     {
         bool iterators_built = false;
-        //If 'next_var' has been processed before.
-        if(is_candidate_variable_processed(next_var)){
+        //If 'next_var' iterators has been created before.
+        if(is_variable_candidate(next_var)){
             return iterators_built;
         }
-        //The next variable to be eliminated is contained in N triples. We need to check if those triples have an iterator or not.
+        //The candidate variable is contained in N triples. We need to check if those triples have an iterator or not.
         for(auto& triple : triples_var[next_var]){
             bool added_to_candidate_var=false;
             Iterator* triple_iterator = new Iterator(next_var, triple, graph);//TODO: mem leak
@@ -749,7 +716,7 @@ public:
             auto& rel_vars = (this->related_vars)[next_var];
             for(auto rel_var : rel_vars){
                 //if 'rel_var' was processed we assume its iterators exists, which means that the current iterator was already created before.
-                if(!is_candidate_variable_processed(rel_var)){
+                if(!is_variable_candidate(rel_var)){
                     //Per each triple we check whether any of the 'rel_var' participates along 'next_var'
                     if((triple->s->isVariable && triple->s->varname == rel_var) ||
                         (triple->p->isVariable && triple->p->varname == rel_var) ||
@@ -761,9 +728,9 @@ public:
                         if(!added_to_candidate_var){
                             this->query_iterators[next_var].push_back(triple_iterator);
                             added_to_candidate_var=true;
-                            std::cout << "Iterator (created by "<< triple_iterator->created_by << ") added to " << next_var << " and " << rel_var << ", belonging to triple ";
+                            std::cout << "Iterator (created by "<< triple_iterator->created_by << ") added to " << next_var << " and " << rel_var << ", for the triple ";
                         }else{
-                            std::cout << "Iterator (created by "<< triple_iterator->created_by << ") added to " << rel_var << ", belonging to triple ";
+                            std::cout << "Iterator (created by "<< triple_iterator->created_by << ") added to " << rel_var << ", for the triple ";
                         }
                         triple->serialize_as_triple_pattern();
                     }
@@ -878,23 +845,18 @@ public:
         else
         {
             //Any other variable but the first. Here we have more information about the BGP.
-            //Vector of pairs: variable and its minimum value.
             //level > 0
             assert ( level > 0);
             assert ( last_processed_var != "");
-            //auto& last_processed_value = var_value_umap[last_processed_var];//TODO: remove this data structure if the same results are achievable using level_candidate_var_umap.
             std::string& aux = level_candidate_var_umap[level - 1];
             auto& last_processed_value = (*bindings)[aux];//Avoid using 'last_processed_var' for this.
-            //assert ( last_processed_var == cand_var);
             std::vector<std::pair<std::string, uint64_t>> varmin_pairs;
             //std::cout << "Last bound var : " << last_processed_var << " last bound value : " << last_processed_value << std::endl;
             //1. Related vars
             auto& rel_vars = (this->related_vars)[last_processed_var];
             for(auto candidate_var : rel_vars){
                 if(std::find((this->single_vars).begin(), (this->single_vars).end(), candidate_var) == (this->single_vars).end() && //(1)
-                    //std::find(processed_vars.begin(), processed_vars.end(), candidate_var) == processed_vars.end() ) // (2)
-                    var_value_umap.find(candidate_var) == var_value_umap.end()) // (2)
-                    //!is_variable_processed(candidate_var))
+                    !is_variable_bound(candidate_var)) //(2)
                 {
                     //(1) variable 'candidate_var' is not marked as a single variable.
                     //(2) variable 'candidate_var' has not been processed.
@@ -930,7 +892,7 @@ public:
                 //2. Single vars
                 for(auto &candidate_var : this->single_vars)
                 {
-                    if(var_value_umap.find(candidate_var) == var_value_umap.end())  // (2) //TODO: GET RID OF THIS AND USE level_candidate_var_umap instead.
+                    if(!is_variable_bound(candidate_var))  // (2) 
                     //if (!is_variable_processed(candidate_var))
                     {
                         return candidate_var;
@@ -940,6 +902,27 @@ public:
         }
         //When no variable can be found, we return from level_candidate_var_umap.
         return level_candidate_var_umap[level];
+    }
+    /*
+    Answer the question "is variable 'var' bound"?
+    */
+    bool is_variable_bound(std::string var){
+        if(boundvar_value_umap.find(var) == boundvar_value_umap.end()){
+            return false;
+        }
+        return true;
+    }
+    /*
+    Answer the question "is variable 'var' candidate"?
+
+    Only the last entry represents a candidate variable. Positions [begin(), end() -1 ) are bound variables, although there is a border case when we are in the last level,
+    in that case the last entry could also be bound.
+    */
+    bool is_variable_candidate(std::string var){
+        if(std::find_if(level_candidate_var_umap.begin(), level_candidate_var_umap.end(), [&var](auto it){return it.second == var; }) == level_candidate_var_umap.end()){
+            return false;
+        }
+        return true;
     }
 };
 
