@@ -647,7 +647,7 @@ public:
         //We add the next variable (candidate) only if is different than the last one. (When doing 'seek()'!=0 we remain in the same variable).
         //All of the above should happen exclusively when we are still in the same 'level'.
         std::string var_to_delete_iters = "";
-        //Is 'varname' NOT a candidate or bound variable? That happens when at the same level the top of the stack is different than 'varname'
+        //Is 'varname' neither a candidate nor bound variable? That happens when at the same level the top of the stack is different than 'varname'
         if(candidate_vars.size() - 1 == level && candidate_vars.top() != varname){
             var_to_delete_iters = candidate_vars.top();
             for (Iterator* triple_iterator : this->query_iterators[var_to_delete_iters]) {
@@ -855,11 +855,11 @@ public:
             //1. Related vars
             auto& rel_vars = (this->related_vars)[last_processed_var];
             for(auto candidate_var : rel_vars){
-                if(std::find((this->single_vars).begin(), (this->single_vars).end(), candidate_var) == (this->single_vars).end() && //(1)
+                if(!is_single_var(candidate_var) && //(1)
                     !is_variable_bound(candidate_var)) //(2)
                 {
-                    //(1) variable 'candidate_var' is not marked as a single variable.
-                    //(2) variable 'candidate_var' has not been processed.
+                    //(1) variable 'candidate_var' is not marked as a single variable (lonely var).
+                    //(2) variable 'candidate_var' has not been bound.
                     //Until here we just have a set of variables that can be the next one to be processed.
                     //We need the triples related to this variable.
                     auto& triples = (this->triples_var)[candidate_var]; //vector<Triple *>
@@ -902,6 +902,13 @@ public:
         }
         //When no variable can be found, we return from level_candidate_var_umap.
         return level_candidate_var_umap[level];
+    }
+
+    bool is_single_var(std::string var){
+        if(std::find((this->single_vars).begin(), (this->single_vars).end(), candidate_var) == (this->single_vars).end()){
+            return false;
+        }
+        return true;
     }
     /*
     Answer the question "is variable 'var' bound"?
