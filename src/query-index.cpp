@@ -112,11 +112,13 @@ void set_scores(vector<Triple*>& query, vector<string>& gao) {
 int main(int argc, char* argv[])
 {
     vector<string> dummy_queries;
+    if(argc != 3){
+        std::cout << "Missing parameters: ./query-index data_file query_file" << std::endl;
+    }
     bool result = get_file_content(argv[2], dummy_queries);
     ring_spo graph_spo;
     cout << " Loading the spo index..."; fflush(stdout);
     graph_spo.load(string(argv[1]));
-
     cout << endl << " spo index loaded " << graph_spo.size() << " bytes" << endl;
     /*
     ring_sop graph_sop;
